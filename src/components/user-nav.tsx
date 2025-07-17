@@ -1,3 +1,6 @@
+// src/components/user-nav.tsx
+"use client";
+
 import {
   Avatar,
   AvatarFallback,
@@ -14,24 +17,46 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import Link from "next/link"
+import { useAuth } from "@/hooks/use-auth"
+import { useRouter } from "next/navigation";
 
 export function UserNav() {
+  const { authenticatedUser, logout } = useAuth();
+  const router = useRouter();
+
+  if (!authenticatedUser) {
+    return null;
+  }
+
+  const handleLogout = () => {
+    logout();
+    router.push('/');
+  }
+
+  const getEmail = (name: string) => {
+    return name.toLowerCase().replace(/ /g,'.') + '@universidad.edu';
+  }
+
+  const getFallback = (name: string) => {
+    return name.substring(0, 1).toUpperCase();
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-9 w-9">
-            <AvatarImage src="https://placehold.co/100x100.png" alt="@prof" data-ai-hint="person" />
-            <AvatarFallback>P</AvatarFallback>
+            <AvatarImage src={`https://placehold.co/100x100.png?text=${getFallback(authenticatedUser.name)}`} alt={authenticatedUser.name} data-ai-hint="person" />
+            <AvatarFallback>{getFallback(authenticatedUser.name)}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">Profesor</p>
+            <p className="text-sm font-medium leading-none">{authenticatedUser.name}</p>
             <p className="text-xs leading-none text-muted-foreground">
-              profesor@universidad.edu
+              {getEmail(authenticatedUser.name)}
             </p>
           </div>
         </DropdownMenuLabel>
@@ -45,8 +70,8 @@ export function UserNav() {
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-            <Link href="/">Cerrar sesión</Link>
+        <DropdownMenuItem onClick={handleLogout}>
+            Cerrar sesión
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

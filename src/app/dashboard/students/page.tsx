@@ -13,11 +13,14 @@ import { PlusCircle, Edit, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { useEvaluations } from "@/hooks/use-evaluations";
+import { useAuth, AuthProvider } from "@/hooks/use-auth";
 
-export default function StudentsPage() {
+
+function StudentsPageContent() {
   const { toast } = useToast();
   const [students, setStudents] = useState<Student[]>(initialStudents);
   const { evaluations } = useEvaluations();
+  const { isAdmin } = useAuth();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [formData, setFormData] = useState({ id: '', name: '', studentId: '' });
@@ -105,35 +108,37 @@ export default function StudentsPage() {
           <h1 className="text-3xl font-bold tracking-tight">Estudiantes</h1>
           <p className="text-muted-foreground">Administrar y ver la información de los estudiantes.</p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={handleAddClick}>
-              <PlusCircle className="mr-2" />
-              Agregar Estudiante
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>{editingStudent ? 'Editar Estudiante' : 'Agregar Estudiante'}</DialogTitle>
-              <DialogDescription>
-                {editingStudent ? 'Actualiza la información del estudiante.' : 'Completa los detalles para agregar un nuevo estudiante.'}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">Nombre</Label>
-                <Input id="name" value={formData.name} onChange={handleFormChange} className="col-span-3" placeholder="Ej: Ana García"/>
+        {isAdmin && (
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={handleAddClick}>
+                <PlusCircle className="mr-2" />
+                Agregar Estudiante
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>{editingStudent ? 'Editar Estudiante' : 'Agregar Estudiante'}</DialogTitle>
+                <DialogDescription>
+                  {editingStudent ? 'Actualiza la información del estudiante.' : 'Completa los detalles para agregar un nuevo estudiante.'}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="name" className="text-right">Nombre</Label>
+                  <Input id="name" value={formData.name} onChange={handleFormChange} className="col-span-3" placeholder="Ej: Ana García"/>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="studentId" className="text-right">ID de Estudiante</Label>
+                  <Input id="studentId" value={formData.studentId} onChange={handleFormChange} className="col-span-3" placeholder="Ej: A01234567" />
+                </div>
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="studentId" className="text-right">ID de Estudiante</Label>
-                <Input id="studentId" value={formData.studentId} onChange={handleFormChange} className="col-span-3" placeholder="Ej: A01234567" />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button type="submit" onClick={handleSaveChanges}>Guardar Cambios</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+              <DialogFooter>
+                <Button type="submit" onClick={handleSaveChanges}>Guardar Cambios</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
       <Card>
         <CardHeader>
@@ -147,7 +152,7 @@ export default function StudentsPage() {
                 <TableHead>Nombre</TableHead>
                 <TableHead>ID de Estudiante</TableHead>
                 <TableHead>Promedio General</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
+                {isAdmin && <TableHead className="text-right">Acciones</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -165,16 +170,18 @@ export default function StudentsPage() {
                         <span className="text-muted-foreground">N/A</span>
                       )}
                     </TableCell>
-                    <TableCell className="text-right space-x-2">
-                       <Button variant="ghost" size="icon" onClick={() => handleEditClick(student)}>
-                          <Edit className="h-4 w-4" />
-                          <span className="sr-only">Editar</span>
-                       </Button>
-                       <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(student.id)}>
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                          <span className="sr-only">Eliminar</span>
-                       </Button>
-                    </TableCell>
+                    {isAdmin && (
+                      <TableCell className="text-right space-x-2">
+                        <Button variant="ghost" size="icon" onClick={() => handleEditClick(student)}>
+                            <Edit className="h-4 w-4" />
+                            <span className="sr-only">Editar</span>
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(student.id)}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                            <span className="sr-only">Eliminar</span>
+                        </Button>
+                      </TableCell>
+                    )}
                   </TableRow>
                 );
               })}
@@ -183,5 +190,14 @@ export default function StudentsPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+
+export default function StudentsPage() {
+  return (
+    <AuthProvider>
+      <StudentsPageContent />
+    </AuthProvider>
   );
 }

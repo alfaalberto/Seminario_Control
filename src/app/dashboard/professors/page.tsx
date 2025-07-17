@@ -12,13 +12,17 @@ import { type Professor } from "@/lib/data";
 import { PlusCircle, Edit, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useProfessors } from "@/hooks/use-professors";
+import { useAuth, AuthProvider } from "@/hooks/use-auth";
 
-export default function ProfessorsPage() {
+function ProfessorsPageContent() {
   const { toast } = useToast();
-  const { professors, addProfessor, updateProfessor, deleteProfessor } = useProfessors();
+  const { professors, adminUser, addProfessor, updateProfessor, deleteProfessor } = useProfessors();
+  const { isAdmin } = useAuth();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProfessor, setEditingProfessor] = useState<Professor | null>(null);
   const [formData, setFormData] = useState({ id: '', name: '', department: '', password: '' });
+
+  const allUsers = [adminUser, ...professors];
 
   const handleAddClick = () => {
     setEditingProfessor(null);
@@ -28,11 +32,19 @@ export default function ProfessorsPage() {
 
   const handleEditClick = (professor: Professor) => {
     setEditingProfessor(professor);
-    setFormData({ ...professor, password: professor.password || ''});
+    setFormData({ ...professor, password: ''}); // Clear password for security
     setIsDialogOpen(true);
   };
   
   const handleDeleteClick = (professorId: string) => {
+    if (professorId === adminUser.id) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No se puede eliminar al administrador.",
+      });
+      return;
+    }
     deleteProfessor(professorId);
      toast({
         title: "Profesor Eliminado",
@@ -46,25 +58,39 @@ export default function ProfessorsPage() {
   };
 
   const handleSaveChanges = () => {
-    if (!formData.name || !formData.department || !formData.password) {
+    if (!formData.name || !formData.department) {
       toast({
         variant: "destructive",
         title: "Campos Requeridos",
-        description: "Por favor, completa todos los campos, incluyendo la contraseña.",
+        description: "Por favor, completa los campos de nombre y departamento.",
       });
       return;
     }
-
+    
     if (editingProfessor) {
-      // Edit existing professor
-      updateProfessor({ ...formData, id: editingProfessor.id });
+      // Edit existing professor or admin
+       const updatedProfessor = { 
+        ...formData, 
+        id: editingProfessor.id,
+        // Keep old password if new one is not provided
+        password: formData.password || editingProfessor.password
+      };
+      updateProfessor(updatedProfessor);
       toast({
-        title: "Profesor Actualizado",
-        description: "La información del profesor ha sido actualizada.",
+        title: "Usuario Actualizado",
+        description: "La información del usuario ha sido actualizada.",
         className: "bg-accent text-accent-foreground"
       });
     } else {
       // Add new professor
+      if (!formData.password) {
+         toast({
+          variant: "destructive",
+          title: "Campos Requeridos",
+          description: "La contraseña es requerida para nuevos profesores.",
+        });
+        return;
+      }
       const newProfessor = { ...formData, id: Date.now().toString() };
       addProfessor(newProfessor);
        toast({
@@ -80,47 +106,49 @@ export default function ProfessorsPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">Profesores</h1>
-          <p className="text-muted-foreground">Administrar y ver la información de los profesores.</p>
+          <h1 className="text-3xl font-bold tracking-tight">Usuarios</h1>
+          <p className="text-muted-foreground">Administrar y ver la información de profesores y administradores.</p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={handleAddClick}>
-              <PlusCircle className="mr-2" />
-              Agregar Profesor
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>{editingProfessor ? 'Editar Profesor' : 'Agregar Profesor'}</DialogTitle>
-              <DialogDescription>
-                {editingProfessor ? 'Actualiza la información del profesor.' : 'Completa los detalles para agregar un nuevo profesor.'}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">Nombre</Label>
-                <Input id="name" value={formData.name} onChange={handleFormChange} className="col-span-3" placeholder="Ej: Dr. Alan Smith"/>
+        {isAdmin && (
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={handleAddClick}>
+                <PlusCircle className="mr-2" />
+                Agregar Profesor
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>{editingProfessor ? 'Editar Usuario' : 'Agregar Profesor'}</DialogTitle>
+                <DialogDescription>
+                  {editingProfessor ? 'Actualiza la información del usuario.' : 'Completa los detalles para agregar un nuevo profesor.'}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="name" className="text-right">Nombre</Label>
+                  <Input id="name" value={formData.name} onChange={handleFormChange} className="col-span-3" placeholder="Ej: Dr. Alan Smith" disabled={editingProfessor?.id === 'admin'}/>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="department" className="text-right">Departamento</Label>
+                  <Input id="department" value={formData.department} onChange={handleFormChange} className="col-span-3" placeholder="Ej: Ciencias de la Computación" />
+                </div>
+                 <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="password" className="text-right">Contraseña</Label>
+                  <Input id="password" type="password" value={formData.password} onChange={handleFormChange} className="col-span-3" placeholder={editingProfessor ? "Dejar en blanco para no cambiar" : "Contraseña segura"} />
+                </div>
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="department" className="text-right">Departamento</Label>
-                <Input id="department" value={formData.department} onChange={handleFormChange} className="col-span-3" placeholder="Ej: Ciencias de la Computación" />
-              </div>
-               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="password" className="text-right">Contraseña</Label>
-                <Input id="password" type="password" value={formData.password} onChange={handleFormChange} className="col-span-3" placeholder="Contraseña segura" />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button type="submit" onClick={handleSaveChanges}>Guardar Cambios</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+              <DialogFooter>
+                <Button type="submit" onClick={handleSaveChanges}>Guardar Cambios</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
       <Card>
         <CardHeader>
-          <CardTitle>Lista de Profesores</CardTitle>
-          <CardDescription>Una lista de todos los profesores en el programa.</CardDescription>
+          <CardTitle>Lista de Usuarios</CardTitle>
+          <CardDescription>Una lista de todos los usuarios del sistema.</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
@@ -128,24 +156,28 @@ export default function ProfessorsPage() {
               <TableRow>
                 <TableHead>Nombre</TableHead>
                 <TableHead>Departamento</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
+                {isAdmin && <TableHead className="text-right">Acciones</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
-              {professors.map((professor) => (
-                  <TableRow key={professor.id}>
-                    <TableCell className="font-medium">{professor.name}</TableCell>
-                    <TableCell>{professor.department}</TableCell>
-                    <TableCell className="text-right space-x-2">
-                       <Button variant="ghost" size="icon" onClick={() => handleEditClick(professor)}>
-                          <Edit className="h-4 w-4" />
-                          <span className="sr-only">Editar</span>
-                       </Button>
-                       <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(professor.id)}>
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                          <span className="sr-only">Eliminar</span>
-                       </Button>
-                    </TableCell>
+              {allUsers.map((user) => (
+                  <TableRow key={user.id}>
+                    <TableCell className="font-medium">{user.name}</TableCell>
+                    <TableCell>{user.department}</TableCell>
+                    {isAdmin && (
+                      <TableCell className="text-right space-x-2">
+                        <Button variant="ghost" size="icon" onClick={() => handleEditClick(user)}>
+                            <Edit className="h-4 w-4" />
+                            <span className="sr-only">Editar</span>
+                        </Button>
+                        {user.id !== 'admin' && (
+                          <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(user.id)}>
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                              <span className="sr-only">Eliminar</span>
+                          </Button>
+                        )}
+                      </TableCell>
+                    )}
                   </TableRow>
               ))}
             </TableBody>
@@ -153,5 +185,14 @@ export default function ProfessorsPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+
+export default function ProfessorsPage() {
+  return (
+    <AuthProvider>
+      <ProfessorsPageContent />
+    </AuthProvider>
   );
 }

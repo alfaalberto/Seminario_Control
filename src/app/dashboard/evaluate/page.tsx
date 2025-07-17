@@ -1,43 +1,36 @@
 // src/app/dashboard/evaluate/page.tsx
 "use client";
 
-import { useState } from "react";
 import { EvaluationForm } from "@/components/evaluation-form";
-import { ProfessorAuthGate } from "@/components/professor-auth-gate";
-import { students, type Professor } from "@/lib/data";
-import { useProfessors } from "@/hooks/use-professors";
+import { useAuth } from "@/hooks/use-auth";
+import { students } from "@/lib/data";
 
 
 export default function EvaluatePage() {
-  const { professors } = useProfessors();
-  const [authenticatedProfessor, setAuthenticatedProfessor] = useState<Professor | null>(null);
+  const { authenticatedUser, isAuthLoading } = useAuth();
 
-  const handleAuthenticationSuccess = (professor: Professor) => {
-    setAuthenticatedProfessor(professor);
-  };
+  if (isAuthLoading) {
+    return <div>Cargando...</div>; // Or a proper skeleton loader
+  }
+  
+  if (!authenticatedUser) {
+    // This should ideally redirect to login, but for now, we'll just show a message.
+    return <div>Debes iniciar sesión para evaluar.</div>
+  }
 
   return (
     <div className="space-y-6">
       <div className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">Evaluar Presentación</h1>
         <p className="text-muted-foreground">
-          {authenticatedProfessor 
-            ? `Evaluando como ${authenticatedProfessor.name}. Completa el formulario a continuación.`
-            : "Selecciona tu perfil de profesor para comenzar a evaluar."}
+          {`Evaluando como ${authenticatedUser.name}. Completa el formulario a continuación.`}
         </p>
       </div>
       
-      {authenticatedProfessor ? (
-        <EvaluationForm 
-          students={students} 
-          evaluator={authenticatedProfessor} 
-        />
-      ) : (
-        <ProfessorAuthGate 
-          professors={professors} 
-          onAuthenticationSuccess={handleAuthenticationSuccess} 
-        />
-      )}
+      <EvaluationForm 
+        students={students} 
+        evaluator={authenticatedUser} 
+      />
     </div>
   );
 }

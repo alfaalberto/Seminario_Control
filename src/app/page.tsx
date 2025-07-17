@@ -1,16 +1,45 @@
-import { redirect } from 'next/navigation';
+// src/app/page.tsx
+'use client';
+
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/logo';
+import { useAuth } from '@/hooks/use-auth';
+import { useProfessors } from '@/hooks/use-professors';
+import { useToast } from '@/hooks/use-toast';
+import { FormEvent, useState } from 'react';
 
-async function login() {
-  'use server';
-  redirect('/dashboard');
-}
+function LoginPageContent() {
+  const router = useRouter();
+  const { login } = useAuth();
+  const { adminUser, professors } = useProfessors();
+  const { toast } = useToast();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-export default function LoginPage() {
+  const allUsers = [adminUser, ...professors];
+
+  const handleLogin = (e: FormEvent) => {
+    e.preventDefault();
+    
+    // Simple email validation for prototype
+    const user = allUsers.find(u => u.name.toLowerCase().replace(/ /g, '.') + "@universidad.edu" === email);
+
+    if (user && user.password === password) {
+      login(user);
+      router.push('/dashboard');
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Error de inicio de sesión",
+        description: "El correo electrónico o la contraseña son incorrectos.",
+      });
+    }
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
       <Card className="w-full max-w-md mx-4">
@@ -24,14 +53,27 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form action={login} className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Correo Electrónico</Label>
-              <Input id="email" type="email" placeholder="profesor@universidad.edu" required defaultValue="profesor@universidad.edu" />
+              <Input 
+                id="email" 
+                type="email" 
+                placeholder="usuario@universidad.edu" 
+                required 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Contraseña</Label>
-              <Input id="password" type="password" required defaultValue="password" />
+              <Input 
+                id="password" 
+                type="password" 
+                required 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </div>
             <Button type="submit" className="w-full">
               Iniciar Sesión
@@ -41,4 +83,9 @@ export default function LoginPage() {
       </Card>
     </div>
   );
+}
+
+
+export default function LoginPage() {
+  return <LoginPageContent />;
 }
