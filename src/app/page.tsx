@@ -11,6 +11,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useProfessors } from '@/hooks/use-professors';
 import { useToast } from '@/hooks/use-toast';
 import { FormEvent, useState } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 function LoginPageContent() {
   const router = useRouter();
@@ -19,14 +20,11 @@ function LoginPageContent() {
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
 
-  const allUsers = [adminUser, ...professors];
-
-  const handleLogin = (e: FormEvent) => {
+  const handleProfessorLogin = (e: FormEvent) => {
     e.preventDefault();
-    
-    // Simple email validation for prototype
-    const user = allUsers.find(u => u.name.toLowerCase().replace(/ /g, '.') + "@universidad.edu" === email);
+    const user = professors.find(u => u.name.toLowerCase().replace(/ /g, '.') + "@universidad.edu" === email);
 
     if (user && user.password === password) {
       login(user);
@@ -39,6 +37,20 @@ function LoginPageContent() {
       });
     }
   };
+
+  const handleAdminLogin = (e: FormEvent) => {
+    e.preventDefault();
+    if (adminUser.password === adminPassword) {
+      login(adminUser);
+      router.push('/dashboard');
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Error de inicio de sesión",
+        description: "La contraseña de administrador es incorrecta.",
+      });
+    }
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
@@ -53,32 +65,57 @@ function LoginPageContent() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Correo Electrónico</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                placeholder="usuario@universidad.edu" 
-                required 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Contraseña</Label>
-              <Input 
-                id="password" 
-                type="password" 
-                required 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-            <Button type="submit" className="w-full">
-              Iniciar Sesión
-            </Button>
-          </form>
+          <Tabs defaultValue="professor" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="professor">Profesor</TabsTrigger>
+              <TabsTrigger value="admin">Administrador</TabsTrigger>
+            </TabsList>
+            <TabsContent value="professor">
+              <form onSubmit={handleProfessorLogin} className="space-y-4 pt-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Correo Electrónico</Label>
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    placeholder="profesor@universidad.edu" 
+                    required 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Contraseña</Label>
+                  <Input 
+                    id="password" 
+                    type="password" 
+                    required 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </div>
+                <Button type="submit" className="w-full">
+                  Iniciar Sesión como Profesor
+                </Button>
+              </form>
+            </TabsContent>
+            <TabsContent value="admin">
+                <form onSubmit={handleAdminLogin} className="space-y-4 pt-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="admin-password">Contraseña de Administrador</Label>
+                    <Input 
+                      id="admin-password" 
+                      type="password" 
+                      required 
+                      value={adminPassword}
+                      onChange={(e) => setAdminPassword(e.target.value)}
+                    />
+                  </div>
+                  <Button type="submit" className="w-full">
+                    Iniciar Sesión como Administrador
+                  </Button>
+              </form>
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
     </div>
