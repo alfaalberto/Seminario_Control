@@ -12,6 +12,19 @@ export const students: Student[] = [
   { id: '5', name: 'Elena Gómez', studentId: 'A01234571' },
 ];
 
+export type Professor = {
+  id: string;
+  name: string;
+  department: string;
+};
+
+export const professors: Professor[] = [
+  { id: 'prof1', name: 'Dr. Alan Smith', department: 'Ciencias de la Computación' },
+  { id: 'prof2', name: 'Dra. Maria Jones', department: 'Ingeniería de Software' },
+  { id: 'prof3', name: 'Dr. David Williams', department: 'Sistemas Inteligentes' },
+];
+
+
 export const semesters = [
   'Primero',
   'Segundo',
@@ -48,10 +61,10 @@ export type Evaluation = {
 };
 
 export const mockEvaluations: Evaluation[] = [
-    { id: 'eval1', studentName: 'Ana García', semester: 'Tercero', date: '2024-05-15', evaluator: 'Dr. Smith', overallScore: 88 },
-    { id: 'eval2', studentName: 'Carlos Rodríguez', semester: 'Tercero', date: '2024-05-15', evaluator: 'Dr. Jones', overallScore: 92 },
-    { id: 'eval3', studentName: 'Beatriz López', semester: 'Primero', date: '2023-12-10', evaluator: 'Dr. Smith', overallScore: 85 },
-    { id: 'eval4', studentName: 'David Martínez', semester: 'Cuarto', date: '2024-05-16', evaluator: 'Dr. Williams', overallScore: 95 },
-    { id: 'eval5', studentName: 'Ana García', semester: 'Segundo', date: '2023-05-20', evaluator: 'Dr. Jones', overallScore: 90 },
-    { id: 'eval6', studentName: 'Carlos Rodríguez', semester: 'Segundo', date: '2023-05-20', evaluator: 'Dr. Smith', overallScore: 89 },
+    { id: 'eval1', studentName: 'Ana García', semester: 'Tercero', date: '2024-05-15', evaluator: 'Dr. Alan Smith', overallScore: 88 },
+    { id: 'eval2', studentName: 'Carlos Rodríguez', semester: 'Tercero', date: '2024-05-15', evaluator: 'Dra. Maria Jones', overallScore: 92 },
+    { id: 'eval3', studentName: 'Beatriz López', semester: 'Primero', date: '2023-12-10', evaluator: 'Dr. Alan Smith', overallScore: 85 },
+    { id: 'eval4', studentName: 'David Martínez', semester: 'Cuarto', date: '2024-05-16', evaluator: 'Dr. David Williams', overallScore: 95 },
+    { id: 'eval5', studentName: 'Ana García', semester: 'Segundo', date: '2023-05-20', evaluator: 'Dra. Maria Jones', overallScore: 90 },
+    { id: 'eval6', studentName: 'Carlos Rodríguez', semester: 'Segundo', date: '2023-05-20', evaluator: 'Dr. Alan Smith', overallScore: 89 },
 ];

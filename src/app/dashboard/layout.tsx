@@ -4,6 +4,7 @@ import {
   Users,
   BarChart,
   ClipboardEdit,
+  BookUser,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -64,6 +65,14 @@ export default function DashboardLayout({
                 <Link href="/dashboard/students">
                   <Users />
                    <span>Estudiantes</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild tooltip="Profesores">
+                <Link href="/dashboard/professors">
+                  <BookUser />
+                   <span>Profesores</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
