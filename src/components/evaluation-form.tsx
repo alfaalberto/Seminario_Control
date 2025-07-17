@@ -8,11 +8,13 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
-import type { Student, Semester, Professor } from "@/lib/data";
+import type { Student, Semester, Professor, Evaluation } from "@/lib/data";
 import { evaluationCriteria, semesters, criteriaStrings } from "@/lib/data";
 import { Sparkles, Loader2 } from "lucide-react";
 import { getAIComments } from "@/app/dashboard/evaluate/actions";
 import { useToast } from "@/hooks/use-toast";
+import { useEvaluations } from "@/hooks/use-evaluations";
+import { format } from "date-fns";
 
 interface EvaluationFormProps {
   students: Student[];
@@ -21,7 +23,8 @@ interface EvaluationFormProps {
 
 export function EvaluationForm({ students, evaluator }: EvaluationFormProps) {
   const { toast } = useToast();
-  const [selectedStudent, setSelectedStudent] = useState<string>("");
+  const { addEvaluation } = useEvaluations();
+  const [selectedStudentId, setSelectedStudentId] = useState<string>("");
   const [selectedSemester, setSelectedSemester] = useState<Semester>("Primero");
   const [scores, setScores] = useState<Record<string, number>>({});
   const [professorPrompt, setProfessorPrompt] = useState("");
@@ -66,6 +69,7 @@ export function EvaluationForm({ students, evaluator }: EvaluationFormProps) {
   const currentCriteria = evaluationCriteria[selectedSemester];
 
   const handleSave = () => {
+    const selectedStudent = students.find(s => s.id === selectedStudentId);
     if (!selectedStudent) {
          toast({
             variant: "destructive",
@@ -74,18 +78,32 @@ export function EvaluationForm({ students, evaluator }: EvaluationFormProps) {
         });
         return;
     }
-    console.log({
-        evaluator: evaluator.name,
-        student: selectedStudent,
+    
+    const totalScore = Object.values(scores).reduce((sum, score) => sum + score, 0);
+    const averageScore = Object.keys(scores).length > 0 ? totalScore / Object.keys(scores).length : 0;
+
+    const newEvaluation: Evaluation = {
+        id: `eval-${Date.now()}`,
+        studentName: selectedStudent.name,
         semester: selectedSemester,
-        scores,
-        aiComments,
-    });
+        date: format(new Date(), 'yyyy-MM-dd'),
+        evaluator: evaluator.name,
+        overallScore: Math.round(averageScore),
+    };
+
+    addEvaluation(newEvaluation);
+    
     toast({
         title: "Evaluación Guardada",
         description: "La evaluación del estudiante ha sido registrada exitosamente.",
         className: "bg-accent text-accent-foreground"
     });
+    
+    // Reset form
+    setSelectedStudentId("");
+    setScores({});
+    setProfessorPrompt("");
+    setAiComments("");
   };
 
   return (
@@ -98,7 +116,7 @@ export function EvaluationForm({ students, evaluator }: EvaluationFormProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <Label htmlFor="student">Estudiante</Label>
-            <Select onValueChange={setSelectedStudent} value={selectedStudent}>
+            <Select onValueChange={setSelectedStudentId} value={selectedStudentId}>
               <SelectTrigger id="student">
                 <SelectValue placeholder="Selecciona un estudiante..." />
               </SelectTrigger>
@@ -144,7 +162,7 @@ export function EvaluationForm({ students, evaluator }: EvaluationFormProps) {
                   min={0}
                   max={100}
                   step={1}
-                  defaultValue={[0]}
+                  value={[scores[criterion] || 0]}
                   onValueChange={(value) => handleScoreChange(criterion, value[0])}
                 />
               </div>

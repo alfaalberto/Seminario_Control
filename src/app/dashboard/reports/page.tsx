@@ -1,9 +1,13 @@
+"use client";
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { mockEvaluations } from "@/lib/data";
+import { useEvaluations } from "@/hooks/use-evaluations";
 import { Badge } from "@/components/ui/badge";
 
 export default function ReportsPage() {
+  const { evaluations } = useEvaluations();
+
   return (
     <div className="space-y-6">
       <div className="space-y-2">
@@ -27,19 +31,27 @@ export default function ReportsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockEvaluations.map((evaluation) => (
-                <TableRow key={evaluation.id}>
-                  <TableCell className="font-medium">{evaluation.studentName}</TableCell>
-                  <TableCell>{evaluation.semester}</TableCell>
-                  <TableCell>{evaluation.date}</TableCell>
-                  <TableCell>{evaluation.evaluator}</TableCell>
-                  <TableCell className="text-right">
-                     <Badge variant={evaluation.overallScore > 90 ? "default" : "secondary"} className={evaluation.overallScore > 90 ? "bg-accent text-accent-foreground" : ""}>
-                        {evaluation.overallScore}
-                     </Badge>
+              {evaluations.length > 0 ? (
+                evaluations.map((evaluation) => (
+                  <TableRow key={evaluation.id}>
+                    <TableCell className="font-medium">{evaluation.studentName}</TableCell>
+                    <TableCell>{evaluation.semester}</TableCell>
+                    <TableCell>{evaluation.date}</TableCell>
+                    <TableCell>{evaluation.evaluator}</TableCell>
+                    <TableCell className="text-right">
+                       <Badge variant={evaluation.overallScore > 90 ? "default" : "secondary"} className={evaluation.overallScore > 90 ? "bg-accent text-accent-foreground" : ""}>
+                          {evaluation.overallScore}
+                       </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center text-muted-foreground">
+                    No hay evaluaciones para mostrar.
                   </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </CardContent>

@@ -2,6 +2,7 @@ import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { ProfessorsProvider } from '@/hooks/use-professors';
+import { EvaluationsProvider } from '@/hooks/use-evaluations';
 
 export const metadata: Metadata = {
   title: 'ThesisEval',
@@ -22,7 +23,9 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <ProfessorsProvider>
-          {children}
+          <EvaluationsProvider>
+            {children}
+          </EvaluationsProvider>
         </ProfessorsProvider>
         <Toaster />
       </body>

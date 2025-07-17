@@ -8,22 +8,25 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { students as initialStudents, type Student, mockEvaluations } from "@/lib/data";
+import { students as initialStudents, type Student } from "@/lib/data";
 import { PlusCircle, Edit, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { useEvaluations } from "@/hooks/use-evaluations";
 
 export default function StudentsPage() {
   const { toast } = useToast();
   const [students, setStudents] = useState<Student[]>(initialStudents);
+  const { evaluations } = useEvaluations();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [formData, setFormData] = useState({ id: '', name: '', studentId: '' });
 
   const studentAverages = useMemo(() => {
     const averages: Record<string, { totalScore: number; count: number; average: number }> = {};
-    mockEvaluations.forEach(evaluation => {
-      const student = initialStudents.find(s => s.name === evaluation.studentName);
+    evaluations.forEach(evaluation => {
+      // We find the student by name. A more robust solution would use IDs.
+      const student = students.find(s => s.name === evaluation.studentName);
       if (student) {
         if (!averages[student.id]) {
           averages[student.id] = { totalScore: 0, count: 0, average: 0 };
@@ -37,7 +40,7 @@ export default function StudentsPage() {
       averages[studentId].average = averages[studentId].totalScore / averages[studentId].count;
     }
     return averages;
-  }, []);
+  }, [evaluations, students]);
 
   const handleAddClick = () => {
     setEditingStudent(null);
@@ -181,3 +184,4 @@ export default function StudentsPage() {
       </Card>
     </div>
   );
+}
