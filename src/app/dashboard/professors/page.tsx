@@ -8,13 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { professors as initialProfessors, type Professor } from "@/lib/data";
+import { type Professor } from "@/lib/data";
 import { PlusCircle, Edit, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useProfessors } from "@/hooks/use-professors";
 
 export default function ProfessorsPage() {
   const { toast } = useToast();
-  const [professors, setProfessors] = useState<Professor[]>(initialProfessors);
+  const { professors, addProfessor, updateProfessor, deleteProfessor } = useProfessors();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProfessor, setEditingProfessor] = useState<Professor | null>(null);
   const [formData, setFormData] = useState({ id: '', name: '', department: '', password: '' });
@@ -32,7 +33,7 @@ export default function ProfessorsPage() {
   };
   
   const handleDeleteClick = (professorId: string) => {
-    setProfessors(professors.filter(p => p.id !== professorId));
+    deleteProfessor(professorId);
      toast({
         title: "Profesor Eliminado",
         description: "El profesor ha sido eliminado de la lista.",
@@ -56,7 +57,7 @@ export default function ProfessorsPage() {
 
     if (editingProfessor) {
       // Edit existing professor
-      setProfessors(professors.map(p => p.id === editingProfessor.id ? { ...formData, id: p.id } : p));
+      updateProfessor({ ...formData, id: editingProfessor.id });
       toast({
         title: "Profesor Actualizado",
         description: "La información del profesor ha sido actualizada.",
@@ -65,7 +66,7 @@ export default function ProfessorsPage() {
     } else {
       // Add new professor
       const newProfessor = { ...formData, id: Date.now().toString() };
-      setProfessors([...professors, newProfessor]);
+      addProfessor(newProfessor);
        toast({
         title: "Profesor Agregado",
         description: "El nuevo profesor ha sido agregado a la lista.",

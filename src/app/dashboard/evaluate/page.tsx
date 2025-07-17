@@ -4,9 +4,12 @@
 import { useState } from "react";
 import { EvaluationForm } from "@/components/evaluation-form";
 import { ProfessorAuthGate } from "@/components/professor-auth-gate";
-import { students, professors, type Professor } from "@/lib/data";
+import { students, type Professor } from "@/lib/data";
+import { useProfessors } from "@/hooks/use-professors";
+
 
 export default function EvaluatePage() {
+  const { professors } = useProfessors();
   const [authenticatedProfessor, setAuthenticatedProfessor] = useState<Professor | null>(null);
 
   const handleAuthenticationSuccess = (professor: Professor) => {
