@@ -13,7 +13,7 @@ import { PlusCircle, Edit, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { useEvaluations } from "@/hooks/use-evaluations";
-import { useAuth, AuthProvider } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/use-auth";
 
 
 function StudentsPageContent() {
@@ -196,8 +196,6 @@ function StudentsPageContent() {
 
 export default function StudentsPage() {
   return (
-    <AuthProvider>
       <StudentsPageContent />
-    </AuthProvider>
   );
 }

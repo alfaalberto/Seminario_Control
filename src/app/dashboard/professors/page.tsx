@@ -12,7 +12,7 @@ import { type Professor } from "@/lib/data";
 import { PlusCircle, Edit, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useProfessors } from "@/hooks/use-professors";
-import { useAuth, AuthProvider } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/use-auth";
 
 function ProfessorsPageContent() {
   const { toast } = useToast();
@@ -191,8 +191,6 @@ function ProfessorsPageContent() {
 
 export default function ProfessorsPage() {
   return (
-    <AuthProvider>
       <ProfessorsPageContent />
-    </AuthProvider>
   );
 }
