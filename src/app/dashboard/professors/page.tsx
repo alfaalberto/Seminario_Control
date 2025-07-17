@@ -17,17 +17,17 @@ export default function ProfessorsPage() {
   const [professors, setProfessors] = useState<Professor[]>(initialProfessors);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProfessor, setEditingProfessor] = useState<Professor | null>(null);
-  const [formData, setFormData] = useState({ id: '', name: '', department: '' });
+  const [formData, setFormData] = useState({ id: '', name: '', department: '', password: '' });
 
   const handleAddClick = () => {
     setEditingProfessor(null);
-    setFormData({ id: '', name: '', department: '' });
+    setFormData({ id: '', name: '', department: '', password: '' });
     setIsDialogOpen(true);
   };
 
   const handleEditClick = (professor: Professor) => {
     setEditingProfessor(professor);
-    setFormData(professor);
+    setFormData({ ...professor, password: professor.password || ''});
     setIsDialogOpen(true);
   };
   
@@ -45,11 +45,11 @@ export default function ProfessorsPage() {
   };
 
   const handleSaveChanges = () => {
-    if (!formData.name || !formData.department) {
+    if (!formData.name || !formData.department || !formData.password) {
       toast({
         variant: "destructive",
         title: "Campos Requeridos",
-        description: "Por favor, completa todos los campos.",
+        description: "Por favor, completa todos los campos, incluyendo la contraseña.",
       });
       return;
     }
@@ -104,6 +104,10 @@ export default function ProfessorsPage() {
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="department" className="text-right">Departamento</Label>
                 <Input id="department" value={formData.department} onChange={handleFormChange} className="col-span-3" placeholder="Ej: Ciencias de la Computación" />
+              </div>
+               <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="password" className="text-right">Contraseña</Label>
+                <Input id="password" type="password" value={formData.password} onChange={handleFormChange} className="col-span-3" placeholder="Contraseña segura" />
               </div>
             </div>
             <DialogFooter>
