@@ -16,12 +16,13 @@ export type Professor = {
   id: string;
   name: string;
   department: string;
+  password?: string;
 };
 
 export const professors: Professor[] = [
-  { id: 'prof1', name: 'Dr. Alan Smith', department: 'Ciencias de la Computación' },
-  { id: 'prof2', name: 'Dra. Maria Jones', department: 'Ingeniería de Software' },
-  { id: 'prof3', name: 'Dr. David Williams', department: 'Sistemas Inteligentes' },
+  { id: 'prof1', name: 'Dr. Alan Smith', department: 'Ciencias de la Computación', password: 'tesis123' },
+  { id: 'prof2', name: 'Dra. Maria Jones', department: 'Ingeniería de Software', password: 'tesis123' },
+  { id: 'prof3', name: 'Dr. David Williams', department: 'Sistemas Inteligentes', password: 'tesis123' },
 ];
 
 

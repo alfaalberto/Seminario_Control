@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
-import type { Student, Semester } from "@/lib/data";
+import type { Student, Semester, Professor } from "@/lib/data";
 import { evaluationCriteria, semesters, criteriaStrings } from "@/lib/data";
 import { Sparkles, Loader2 } from "lucide-react";
 import { getAIComments } from "@/app/dashboard/evaluate/actions";
@@ -16,9 +16,10 @@ import { useToast } from "@/hooks/use-toast";
 
 interface EvaluationFormProps {
   students: Student[];
+  evaluator: Professor;
 }
 
-export function EvaluationForm({ students }: EvaluationFormProps) {
+export function EvaluationForm({ students, evaluator }: EvaluationFormProps) {
   const { toast } = useToast();
   const [selectedStudent, setSelectedStudent] = useState<string>("");
   const [selectedSemester, setSelectedSemester] = useState<Semester>("Primero");
@@ -74,6 +75,7 @@ export function EvaluationForm({ students }: EvaluationFormProps) {
         return;
     }
     console.log({
+        evaluator: evaluator.name,
         student: selectedStudent,
         semester: selectedSemester,
         scores,
