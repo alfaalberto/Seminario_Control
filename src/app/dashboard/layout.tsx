@@ -36,34 +36,34 @@ export default function DashboardLayout({
         <SidebarContent>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="Dashboard">
+              <SidebarMenuButton asChild tooltip="Panel de control">
                 <Link href="/dashboard">
                   <Home />
-                  <span>Dashboard</span>
+                  <span>Panel</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="Evaluate">
+              <SidebarMenuButton asChild tooltip="Evaluar">
                 <Link href="/dashboard/evaluate">
                   <ClipboardEdit />
-                   <span>Evaluate</span>
+                   <span>Evaluar</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="Reports">
+              <SidebarMenuButton asChild tooltip="Reportes">
                 <Link href="/dashboard/reports">
                   <BarChart />
-                   <span>Reports</span>
+                   <span>Reportes</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="Students">
+              <SidebarMenuButton asChild tooltip="Estudiantes">
                 <Link href="/dashboard/students">
                   <Users />
-                   <span>Students</span>
+                   <span>Estudiantes</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>

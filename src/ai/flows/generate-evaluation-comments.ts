@@ -2,25 +2,25 @@
 'use server';
 
 /**
- * @fileOverview Generates evaluation comments for thesis presentations based on professor prompts.
+ * @fileOverview Genera comentarios de evaluación para presentaciones de tesis basados en las indicaciones del profesor.
  *
- * - generateEvaluationComments - A function that generates evaluation comments.
- * - GenerateEvaluationCommentsInput - The input type for the generateEvaluationComments function.
- * - GenerateEvaluationCommentsOutput - The return type for the generateEvaluationComments function.
+ * - generateEvaluationComments - Una función que genera comentarios de evaluación.
+ * - GenerateEvaluationCommentsInput - El tipo de entrada para la función generateEvaluationComments.
+ * - GenerateEvaluationCommentsOutput - El tipo de retorno para la función generateEvaluationComments.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const GenerateEvaluationCommentsInputSchema = z.object({
-  prompt: z.string().describe('A natural language prompt from the professor describing the student\'s presentation.'),
-  semester: z.enum(['First', 'Second', 'Third', 'Fourth', 'Fifth']).describe('The semester of the presentation.'),
-  criteria: z.string().describe('The specific evaluation criteria for the semester.'),
+  prompt: z.string().describe('Una indicación en lenguaje natural del profesor describiendo la presentación del estudiante.'),
+  semester: z.enum(['Primero', 'Segundo', 'Tercero', 'Cuarto', 'Quinto']).describe('El semestre de la presentación.'),
+  criteria: z.string().describe('Los criterios de evaluación específicos para el semestre.'),
 });
 export type GenerateEvaluationCommentsInput = z.infer<typeof GenerateEvaluationCommentsInputSchema>;
 
 const GenerateEvaluationCommentsOutputSchema = z.object({
-  comments: z.string().describe('Generated evaluation comments and insights based on the prompt.'),
+  comments: z.string().describe('Comentarios y percepciones de evaluación generados basados en la indicación.'),
 });
 export type GenerateEvaluationCommentsOutput = z.infer<typeof GenerateEvaluationCommentsOutputSchema>;
 
@@ -32,16 +32,16 @@ const prompt = ai.definePrompt({
   name: 'generateEvaluationCommentsPrompt',
   input: {schema: GenerateEvaluationCommentsInputSchema},
   output: {schema: GenerateEvaluationCommentsOutputSchema},
-  prompt: `You are an AI assistant helping professors evaluate student thesis presentations.
+  prompt: `Eres un asistente de IA que ayuda a los profesores a evaluar las presentaciones de tesis de los estudiantes.
 
-  Based on the professor's prompt, generate helpful and constructive evaluation comments and insights.
-  Consider the semester and the specific evaluation criteria for that semester.
+  Basándote en la indicación del profesor, genera comentarios y percepciones de evaluación útiles y constructivos.
+  Considera el semestre y los criterios de evaluación específicos para ese semestre.
 
-  Semester: {{{semester}}}
-  Criteria: {{{criteria}}}
-  Professor's Prompt: {{{prompt}}}
+  Semestre: {{{semester}}}
+  Criterios: {{{criteria}}}
+  Indicación del profesor: {{{prompt}}}
 
-  Comments and Insights:`,
+  Comentarios y percepciones:`,
 });
 
 const generateEvaluationCommentsFlow = ai.defineFlow(

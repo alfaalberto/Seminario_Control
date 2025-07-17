@@ -29,24 +29,24 @@ export function UserNav() {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">Professor</p>
+            <p className="text-sm font-medium leading-none">Profesor</p>
             <p className="text-xs leading-none text-muted-foreground">
-              professor@university.edu
+              profesor@universidad.edu
             </p>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem>
-            Profile
+            Perfil
           </DropdownMenuItem>
           <DropdownMenuItem>
-            Settings
+            Configuración
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-            <Link href="/">Log out</Link>
+            <Link href="/">Cerrar sesión</Link>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -20,21 +20,21 @@ export default function LoginPage() {
             </div>
           <CardTitle className="text-2xl font-bold tracking-tight">ThesisEval</CardTitle>
           <CardDescription>
-            Log in to evaluate thesis presentations
+            Inicia sesión para evaluar presentaciones de tesis
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form action={login} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="professor@university.edu" required defaultValue="professor@university.edu" />
+              <Label htmlFor="email">Correo Electrónico</Label>
+              <Input id="email" type="email" placeholder="profesor@universidad.edu" required defaultValue="profesor@universidad.edu" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">Contraseña</Label>
               <Input id="password" type="password" required defaultValue="password" />
             </div>
             <Button type="submit" className="w-full">
-              Login
+              Iniciar Sesión
             </Button>
           </form>
         </CardContent>

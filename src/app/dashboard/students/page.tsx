@@ -6,20 +6,20 @@ export default function StudentsPage() {
   return (
     <div className="space-y-6">
        <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">Students</h1>
-        <p className="text-muted-foreground">Manage and view student information.</p>
+        <h1 className="text-3xl font-bold tracking-tight">Estudiantes</h1>
+        <p className="text-muted-foreground">Administrar y ver la información de los estudiantes.</p>
       </div>
       <Card>
         <CardHeader>
-          <CardTitle>Student List</CardTitle>
-          <CardDescription>A list of all students in the program.</CardDescription>
+          <CardTitle>Lista de Estudiantes</CardTitle>
+          <CardDescription>Una lista de todos los estudiantes en el programa.</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Student ID</TableHead>
+                <TableHead>Nombre</TableHead>
+                <TableHead>ID de Estudiante</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

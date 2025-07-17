@@ -7,23 +7,23 @@ export default function ReportsPage() {
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">Evaluation Reports</h1>
-        <p className="text-muted-foreground">View and analyze past evaluation records.</p>
+        <h1 className="text-3xl font-bold tracking-tight">Reportes de Evaluación</h1>
+        <p className="text-muted-foreground">Ver y analizar registros de evaluaciones pasadas.</p>
       </div>
       <Card>
         <CardHeader>
-          <CardTitle>All Evaluations</CardTitle>
-          <CardDescription>A complete history of all recorded evaluations.</CardDescription>
+          <CardTitle>Todas las Evaluaciones</CardTitle>
+          <CardDescription>Un historial completo de todas las evaluaciones registradas.</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Student</TableHead>
-                <TableHead>Semester</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Evaluator</TableHead>
-                <TableHead className="text-right">Overall Score</TableHead>
+                <TableHead>Estudiante</TableHead>
+                <TableHead>Semestre</TableHead>
+                <TableHead>Fecha</TableHead>
+                <TableHead>Evaluador</TableHead>
+                <TableHead className="text-right">Puntaje General</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

@@ -21,7 +21,7 @@ interface EvaluationFormProps {
 export function EvaluationForm({ students }: EvaluationFormProps) {
   const { toast } = useToast();
   const [selectedStudent, setSelectedStudent] = useState<string>("");
-  const [selectedSemester, setSelectedSemester] = useState<Semester>("First");
+  const [selectedSemester, setSelectedSemester] = useState<Semester>("Primero");
   const [scores, setScores] = useState<Record<string, number>>({});
   const [professorPrompt, setProfessorPrompt] = useState("");
   const [aiComments, setAiComments] = useState("");
@@ -37,7 +37,7 @@ export function EvaluationForm({ students }: EvaluationFormProps) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Please enter a prompt for the AI.",
+        description: "Por favor, introduce una indicación para la IA.",
       });
       return;
     }
@@ -52,7 +52,7 @@ export function EvaluationForm({ students }: EvaluationFormProps) {
         if(result.error) {
             toast({
                 variant: "destructive",
-                title: "AI Error",
+                title: "Error de IA",
                 description: result.error,
             });
             setAiComments("");
@@ -68,8 +68,8 @@ export function EvaluationForm({ students }: EvaluationFormProps) {
     if (!selectedStudent) {
          toast({
             variant: "destructive",
-            title: "Missing Information",
-            description: "Please select a student.",
+            title: "Información Faltante",
+            description: "Por favor, selecciona un estudiante.",
         });
         return;
     }
@@ -80,8 +80,8 @@ export function EvaluationForm({ students }: EvaluationFormProps) {
         aiComments,
     });
     toast({
-        title: "Evaluation Saved",
-        description: "The student's evaluation has been successfully recorded.",
+        title: "Evaluación Guardada",
+        description: "La evaluación del estudiante ha sido registrada exitosamente.",
         className: "bg-accent text-accent-foreground"
     });
   };
@@ -89,16 +89,16 @@ export function EvaluationForm({ students }: EvaluationFormProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Evaluation Details</CardTitle>
-        <CardDescription>Select a student and semester to begin.</CardDescription>
+        <CardTitle>Detalles de la Evaluación</CardTitle>
+        <CardDescription>Selecciona un estudiante y un semestre para comenzar.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <Label htmlFor="student">Student</Label>
+            <Label htmlFor="student">Estudiante</Label>
             <Select onValueChange={setSelectedStudent} value={selectedStudent}>
               <SelectTrigger id="student">
-                <SelectValue placeholder="Select a student..." />
+                <SelectValue placeholder="Selecciona un estudiante..." />
               </SelectTrigger>
               <SelectContent>
                 {students.map((student) => (
@@ -110,15 +110,15 @@ export function EvaluationForm({ students }: EvaluationFormProps) {
             </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="semester">Semester</Label>
+            <Label htmlFor="semester">Semestre</Label>
             <Select onValueChange={(val) => setSelectedSemester(val as Semester)} value={selectedSemester}>
               <SelectTrigger id="semester">
-                <SelectValue placeholder="Select a semester..." />
+                <SelectValue placeholder="Selecciona un semestre..." />
               </SelectTrigger>
               <SelectContent>
                 {semesters.map((semester) => (
                   <SelectItem key={semester} value={semester}>
-                    {semester} Semester
+                    {semester} Semestre
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -129,7 +129,7 @@ export function EvaluationForm({ students }: EvaluationFormProps) {
         <Separator />
 
         <div>
-          <h3 className="text-lg font-medium mb-4">Evaluation Criteria</h3>
+          <h3 className="text-lg font-medium mb-4">Criterios de Evaluación</h3>
           <div className="space-y-6">
             {currentCriteria.map((criterion) => (
               <div key={criterion} className="space-y-3">
@@ -153,13 +153,13 @@ export function EvaluationForm({ students }: EvaluationFormProps) {
         <Separator />
 
         <div>
-            <h3 className="text-lg font-medium mb-4">AI Evaluation Assistant</h3>
+            <h3 className="text-lg font-medium mb-4">Asistente de Evaluación IA</h3>
             <div className="space-y-4">
                 <div className="space-y-2">
-                    <Label htmlFor="professor-prompt">Professor's Prompt</Label>
+                    <Label htmlFor="professor-prompt">Indicación del Profesor</Label>
                     <Textarea 
                         id="professor-prompt" 
-                        placeholder="e.g., The student showed great clarity in the problem statement but the methodology seems weak..." 
+                        placeholder="Ej: El estudiante mostró gran claridad en el planteamiento del problema, pero la metodología parece débil..." 
                         value={professorPrompt}
                         onChange={(e) => setProfessorPrompt(e.target.value)}
                         rows={3}
@@ -171,13 +171,13 @@ export function EvaluationForm({ students }: EvaluationFormProps) {
                     ) : (
                         <Sparkles className="mr-2 h-4 w-4" />
                     )}
-                    Generate Comments
+                    Generar Comentarios
                 </Button>
                  <div className="space-y-2">
-                    <Label htmlFor="ai-comments">Generated Comments & Insights</Label>
+                    <Label htmlFor="ai-comments">Comentarios y Percepciones Generados</Label>
                     <Textarea 
                         id="ai-comments"
-                        placeholder="AI-generated comments will appear here..."
+                        placeholder="Los comentarios generados por IA aparecerán aquí..."
                         value={aiComments}
                         readOnly
                         rows={5}
@@ -188,7 +188,7 @@ export function EvaluationForm({ students }: EvaluationFormProps) {
         </div>
       </CardContent>
       <CardFooter>
-        <Button onClick={handleSave} size="lg">Save Evaluation</Button>
+        <Button onClick={handleSave} size="lg">Guardar Evaluación</Button>
       </CardFooter>
     </Card>
   );
