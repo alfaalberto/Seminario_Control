@@ -1,16 +1,17 @@
 // src/app/dashboard/students/page.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { students as initialStudents, type Student } from "@/lib/data";
+import { students as initialStudents, type Student, mockEvaluations } from "@/lib/data";
 import { PlusCircle, Edit, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
 
 export default function StudentsPage() {
   const { toast } = useToast();
@@ -18,6 +19,25 @@ export default function StudentsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [formData, setFormData] = useState({ id: '', name: '', studentId: '' });
+
+  const studentAverages = useMemo(() => {
+    const averages: Record<string, { totalScore: number; count: number; average: number }> = {};
+    mockEvaluations.forEach(evaluation => {
+      const student = initialStudents.find(s => s.name === evaluation.studentName);
+      if (student) {
+        if (!averages[student.id]) {
+          averages[student.id] = { totalScore: 0, count: 0, average: 0 };
+        }
+        averages[student.id].totalScore += evaluation.overallScore;
+        averages[student.id].count++;
+      }
+    });
+
+    for (const studentId in averages) {
+      averages[studentId].average = averages[studentId].totalScore / averages[studentId].count;
+    }
+    return averages;
+  }, []);
 
   const handleAddClick = () => {
     setEditingStudent(null);
@@ -36,8 +56,7 @@ export default function StudentsPage() {
      toast({
         title: "Estudiante Eliminado",
         description: "El estudiante ha sido eliminado de la lista.",
-        className: "bg-accent text-accent-foreground"
-    });
+     });
   }
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -124,30 +143,41 @@ export default function StudentsPage() {
               <TableRow>
                 <TableHead>Nombre</TableHead>
                 <TableHead>ID de Estudiante</TableHead>
+                <TableHead>Promedio General</TableHead>
                 <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {students.map((student) => (
-                <TableRow key={student.id}>
-                  <TableCell className="font-medium">{student.name}</TableCell>
-                  <TableCell>{student.studentId}</TableCell>
-                  <TableCell className="text-right space-x-2">
-                     <Button variant="ghost" size="icon" onClick={() => handleEditClick(student)}>
-                        <Edit className="h-4 w-4" />
-                        <span className="sr-only">Editar</span>
-                     </Button>
-                     <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(student.id)}>
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                        <span className="sr-only">Eliminar</span>
-                     </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {students.map((student) => {
+                const averageData = studentAverages[student.id];
+                const average = averageData ? averageData.average.toFixed(2) : 'N/A';
+                return (
+                  <TableRow key={student.id}>
+                    <TableCell className="font-medium">{student.name}</TableCell>
+                    <TableCell>{student.studentId}</TableCell>
+                    <TableCell>
+                      {average !== 'N/A' ? (
+                        <Badge variant="secondary">{average}</Badge>
+                      ) : (
+                        <span className="text-muted-foreground">N/A</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right space-x-2">
+                       <Button variant="ghost" size="icon" onClick={() => handleEditClick(student)}>
+                          <Edit className="h-4 w-4" />
+                          <span className="sr-only">Editar</span>
+                       </Button>
+                       <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(student.id)}>
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                          <span className="sr-only">Eliminar</span>
+                       </Button>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </CardContent>
       </Card>
     </div>
   );
-}
