@@ -49,42 +49,53 @@ export type Semester = (typeof semesters)[number];
 
 type Criterion = {
     name: string;
+    description: string;
     weight: number; // Weight is a value between 0 and 1
 };
 
 export const evaluationCriteria: Record<Semester, Criterion[]> = {
   Primero: [
-      { name: 'Propuesta de Tesis (60%)', weight: 0.6 },
-      { name: 'Presentación (30%)', weight: 0.3 },
-      { name: 'Asistencia (10%)', weight: 0.1 },
+      { name: 'Definición del Problema', description: 'Claridad y delimitación del problema a resolver.', weight: 0.20 },
+      { name: 'Revisión del Estado del Arte', description: 'Pertinencia, actualidad y profundidad del análisis bibliográfico.', weight: 0.25 },
+      { name: 'Justificación y Relevancia', description: 'Importancia del estudio en el contexto de la línea de investigación.', weight: 0.20 },
+      { name: 'Hipótesis u Objetivo General', description: 'Claridad y coherencia con la problemática.', weight: 0.15 },
+      { name: 'Viabilidad Técnica y Académica', description: 'Recursos disponibles, cronograma inicial y factibilidad.', weight: 0.20 },
   ],
   Segundo: [
-      { name: 'Avance de Tesis (60%)', weight: 0.6 },
-      { name: 'Presentación (30%)', weight: 0.3 },
-      { name: 'Asistencia (10%)', weight: 0.1 },
+      { name: 'Marco Teórico Profundizado', description: 'Aplicación de fundamentos de la línea elegida.', weight: 0.20 },
+      { name: 'Metodología', description: 'Diseño experimental o de simulación, técnicas y herramientas.', weight: 0.25 },
+      { name: 'Modelo Analítico o Computacional', description: 'Pertinencia del modelo propuesto y validación inicial.', weight: 0.20 },
+      { name: 'Avances Prácticos o Simulados', description: 'Primeros resultados, gráficas, pruebas piloto.', weight: 0.20 },
+      { name: 'Plan de Trabajo Ajustado', description: 'Actualización del cronograma y detección de riesgos.', weight: 0.15 },
   ],
   Tercero: [
-      { name: 'Artículo de Congreso (60%)', weight: 0.6 },
-      { name: 'Presentación (30%)', weight: 0.3 },
-      { name: 'Asistencia (10%)', weight: 0.1 },
+      { name: 'Implementación Técnica/Prototipo', description: 'Montaje, codificación o fabricación de sistemas.', weight: 0.25 },
+      { name: 'Análisis Intermedio de Resultados', description: 'Presentación de resultados significativos (simulados o experimentales).', weight: 0.25 },
+      { name: 'Comparación con Estado del Arte', description: 'Evaluación frente a estándares o publicaciones previas.', weight: 0.15 },
+      { name: 'Identificación de Problemas Técnicos', description: 'Análisis crítico y propuesta de soluciones.', weight: 0.15 },
+      { name: 'Comunicación Técnica y Visual', description: 'Claridad en gráficas, tablas, ecuaciones y diagramas.', weight: 0.20 },
   ],
   Cuarto: [
-      { name: 'Borrador de Tesis (60%)', weight: 0.6 },
-      { name: 'Presentación (30%)', weight: 0.3 },
-      { name: 'Asistencia (10%)', weight: 0.1 },
+      { name: 'Resultados Completos y Validados', description: 'Datos concluyentes con métodos rigurosos.', weight: 0.30 },
+      { name: 'Discusión y Contribución Científica', description: 'Originalidad, impacto en la línea de investigación.', weight: 0.25 },
+      { name: 'Redacción de Artículos o Tesis', description: 'Avances en manuscrito, estructura y estilo académico.', weight: 0.20 },
+      { name: 'Publicaciones/Divulgación', description: 'Envío a congresos, revistas o patentes (si aplica).', weight: 0.15 },
+      { name: 'Preparación para Defensa', description: 'Capacidad de explicar y defender el proyecto ante expertos.', weight: 0.10 },
   ],
   Quinto: [
-      { name: 'Artículo para Revista (60%)', weight: 0.6 },
-      { name: 'Presentación (30%)', weight: 0.3 },
-      { name: 'Asistencia (10%)', weight: 0.1 },
+      { name: 'Diagnóstico de Retrasos', description: 'Análisis realista de los factores que impidieron la conclusión.', weight: 0.20 },
+      { name: 'Plan de Recuperación', description: 'Acciones específicas, metas semanales, responsables.', weight: 0.25 },
+      { name: 'Nuevos Avances Técnicos', description: 'Resultados adicionales logrados tras el 4to semestre.', weight: 0.20 },
+      { name: 'Impacto de la Ampliación', description: 'Valor agregado por el tiempo adicional.', weight: 0.15 },
+      { name: 'Compromiso Académico', description: 'Puntualidad, cumplimiento de entregables y responsabilidad.', weight: 0.20 },
   ],
 };
 
 export const criteriaStrings: Record<Semester, string> = Object.entries(
   evaluationCriteria
 ).reduce((acc, [semester, criteria]) => {
-  const criteriaNames = criteria.map(c => c.name).join(', ');
-  acc[semester as Semester] = `${criteriaNames}. La presentación debe durar máximo 20 minutos y la sesión de preguntas y respuestas otros 20 minutos.`;
+  const criteriaDetails = criteria.map(c => `- ${c.name} (${c.weight * 100}%): ${c.description}`).join('\n');
+  acc[semester as Semester] = `Criterios para el ${semester} Semestre:\n${criteriaDetails}`;
   return acc;
 }, {} as Record<Semester, string>);
 

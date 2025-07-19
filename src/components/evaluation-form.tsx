@@ -16,6 +16,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useEvaluations } from "@/hooks/use-evaluations";
 import { format } from "date-fns";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
 
 interface EvaluationFormProps {
   students: Student[];
@@ -75,12 +77,19 @@ export function EvaluationForm({ students, evaluator }: EvaluationFormProps) {
   };
 
   const overallScore = useMemo(() => {
+    if (currentCriteria.length === 0) return 0;
+    const totalWeight = currentCriteria.reduce((sum, criterion) => sum + criterion.weight, 0);
+    // Handle potential floating point inaccuracies by rounding the total weight
+    if (Math.round(totalWeight * 100) !== 100) {
+      console.warn(`La suma de los pesos para el semestre ${selectedSemester} no es 100%. Es ${totalWeight * 100}%.`);
+    }
+
     const totalScore = currentCriteria.reduce((acc, criterion) => {
         const score = scores[criterion.name] || 0;
         return acc + score * criterion.weight;
     }, 0);
     return parseFloat(totalScore.toFixed(2));
-  }, [scores, currentCriteria]);
+  }, [scores, currentCriteria, selectedSemester]);
 
 
   const handleSave = () => {
@@ -129,6 +138,7 @@ export function EvaluationForm({ students, evaluator }: EvaluationFormProps) {
   };
 
   return (
+    <TooltipProvider>
     <Card>
       <CardHeader>
         <CardTitle>Detalles de la Evaluación del Seminario</CardTitle>
@@ -189,8 +199,18 @@ export function EvaluationForm({ students, evaluator }: EvaluationFormProps) {
             {currentCriteria.map((criterion) => (
               <div key={criterion.name} className="space-y-3">
                 <div className="flex justify-between items-center">
-                    <Label htmlFor={criterion.name}>{criterion.name}</Label>
-                    <span className="text-sm font-medium text-primary w-12 text-center rounded-md bg-muted px-2 py-1">{scores[criterion.name] || 0}</span>
+                   <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Label htmlFor={criterion.name} className="flex items-center cursor-help">
+                          {criterion.name} ({criterion.weight * 100}%)
+                          <Info className="h-3 w-3 ml-2 text-muted-foreground" />
+                        </Label>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-xs">{criterion.description}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <span className="text-sm font-medium text-primary w-16 text-center rounded-md bg-muted px-2 py-1">{scores[criterion.name]?.toFixed(1) || '0.0'}</span>
                 </div>
                 <Slider
                   id={criterion.name}
@@ -254,5 +274,6 @@ export function EvaluationForm({ students, evaluator }: EvaluationFormProps) {
         <Button onClick={handleSave} size="lg">Guardar Evaluación</Button>
       </CardFooter>
     </Card>
+    </TooltipProvider>
   );
 }
