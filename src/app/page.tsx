@@ -24,7 +24,7 @@ function LoginPageContent() {
 
   const handleProfessorLogin = (e: FormEvent) => {
     e.preventDefault();
-    const user = professors.find(u => u.name.toLowerCase().replace(/ /g, '.') + "@universidad.edu" === email);
+    const user = professors.find(u => u.email === email);
 
     if (user && user.password === password) {
       login(user);

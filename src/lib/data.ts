@@ -16,6 +16,7 @@ export type Professor = {
   id: string;
   name: string;
   department: string;
+  email: string;
   password?: string;
   role?: 'admin' | 'professor';
 };
@@ -24,14 +25,15 @@ export const adminUser: Professor = {
   id: 'admin',
   name: 'Administrador',
   department: 'Administración del Sistema',
+  email: 'admin@universidad.edu',
   password: '1234',
   role: 'admin',
 };
 
 export const professors: Professor[] = [
-  { id: 'prof1', name: 'Dr. Alan Smith', department: 'Ciencias de la Computación', password: 'tesis123', role: 'professor' },
-  { id: 'prof2', name: 'Dra. Maria Jones', department: 'Ingeniería de Software', password: 'tesis123', role: 'professor' },
-  { id: 'prof3', name: 'Dr. David Williams', department: 'Sistemas Inteligentes', password: 'tesis123', role: 'professor' },
+  { id: 'prof1', name: 'Dr. Alan Smith', department: 'Ciencias de la Computación', email: 'alan.smith@universidad.edu', password: 'tesis123', role: 'professor' },
+  { id: 'prof2', name: 'Dra. Maria Jones', department: 'Ingeniería de Software', email: 'maria.jones@universidad.edu', password: 'tesis123', role: 'professor' },
+  { id: 'prof3', name: 'Dr. David Williams', department: 'Sistemas Inteligentes', email: 'david.williams@universidad.edu', password: 'tesis123', role: 'professor' },
 ];
 
 

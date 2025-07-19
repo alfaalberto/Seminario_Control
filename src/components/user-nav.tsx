@@ -33,10 +33,6 @@ export function UserNav() {
     router.push('/');
   }
 
-  const getEmail = (name: string) => {
-    return name.toLowerCase().replace(/ /g,'.') + '@universidad.edu';
-  }
-
   const getFallback = (name: string) => {
     return name.substring(0, 1).toUpperCase();
   }
@@ -56,7 +52,7 @@ export function UserNav() {
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">{authenticatedUser.name}</p>
             <p className="text-xs leading-none text-muted-foreground">
-              {getEmail(authenticatedUser.name)}
+              {authenticatedUser.email}
             </p>
           </div>
         </DropdownMenuLabel>

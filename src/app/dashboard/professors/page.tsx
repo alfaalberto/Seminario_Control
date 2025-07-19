@@ -20,13 +20,13 @@ function ProfessorsPageContent() {
   const { isAdmin } = useAuth();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProfessor, setEditingProfessor] = useState<Professor | null>(null);
-  const [formData, setFormData] = useState({ id: '', name: '', department: '', password: '' });
+  const [formData, setFormData] = useState({ id: '', name: '', department: '', email: '', password: '' });
 
   const allUsers = [adminUser, ...professors];
 
   const handleAddClick = () => {
     setEditingProfessor(null);
-    setFormData({ id: '', name: '', department: '', password: '' });
+    setFormData({ id: '', name: '', department: '', email: '', password: '' });
     setIsDialogOpen(true);
   };
 
@@ -58,11 +58,11 @@ function ProfessorsPageContent() {
   };
 
   const handleSaveChanges = () => {
-    if (!formData.name || !formData.department) {
+    if (!formData.name || !formData.department || !formData.email) {
       toast({
         variant: "destructive",
         title: "Campos Requeridos",
-        description: "Por favor, completa los campos de nombre y departamento.",
+        description: "Por favor, completa los campos de nombre, departamento y email.",
       });
       return;
     }
@@ -130,6 +130,10 @@ function ProfessorsPageContent() {
                   <Input id="name" value={formData.name} onChange={handleFormChange} className="col-span-3" placeholder="Ej: Dr. Alan Smith" disabled={editingProfessor?.id === 'admin'}/>
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="email" className="text-right">Email</Label>
+                  <Input id="email" type="email" value={formData.email} onChange={handleFormChange} className="col-span-3" placeholder="Ej: alan.smith@universidad.edu" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="department" className="text-right">Departamento</Label>
                   <Input id="department" value={formData.department} onChange={handleFormChange} className="col-span-3" placeholder="Ej: Ciencias de la Computación" />
                 </div>
@@ -155,6 +159,7 @@ function ProfessorsPageContent() {
             <TableHeader>
               <TableRow>
                 <TableHead>Nombre</TableHead>
+                <TableHead>Email</TableHead>
                 <TableHead>Departamento</TableHead>
                 {isAdmin && <TableHead className="text-right">Acciones</TableHead>}
               </TableRow>
@@ -163,6 +168,7 @@ function ProfessorsPageContent() {
               {allUsers.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell className="font-medium">{user.name}</TableCell>
+                    <TableCell>{user.email}</TableCell>
                     <TableCell>{user.department}</TableCell>
                     {isAdmin && (
                       <TableCell className="text-right space-x-2">
