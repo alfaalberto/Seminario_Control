@@ -6,8 +6,8 @@ import { EvaluationsProvider } from '@/hooks/use-evaluations';
 import { AuthProvider } from '@/hooks/use-auth';
 
 export const metadata: Metadata = {
-  title: 'ThesisEval',
-  description: 'Evaluación en tiempo real para presentaciones de tesis.',
+  title: 'Seminario SEPI',
+  description: 'Plataforma de Evaluación del Seminario Departamental - Maestría en Ciencias en Ingeniería Electrónica.',
 };
 
 export default function RootLayout({

@@ -31,7 +31,7 @@ export default function DashboardLayout({
         <SidebarHeader>
           <div className="p-2 flex items-center gap-2">
             <Logo />
-            <span className="font-bold text-lg">ThesisEval</span>
+            <span className="font-bold text-lg">Seminario SEPI</span>
           </div>
         </SidebarHeader>
         <SidebarContent>

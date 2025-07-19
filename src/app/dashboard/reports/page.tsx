@@ -8,6 +8,12 @@ import { Badge } from "@/components/ui/badge";
 export default function ReportsPage() {
   const { evaluations } = useEvaluations();
 
+  const getBadgeVariant = (score: number) => {
+    if (score >= 9) return "default";
+    if (score >= 7) return "secondary";
+    return "destructive";
+  }
+
   return (
     <div className="space-y-6">
       <div className="space-y-2">
@@ -17,7 +23,7 @@ export default function ReportsPage() {
       <Card>
         <CardHeader>
           <CardTitle>Todas las Evaluaciones</CardTitle>
-          <CardDescription>Un historial completo de todas las evaluaciones registradas.</CardDescription>
+          <CardDescription>Un historial completo de todas las evaluaciones registradas en el seminario.</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
@@ -27,7 +33,7 @@ export default function ReportsPage() {
                 <TableHead>Semestre</TableHead>
                 <TableHead>Fecha</TableHead>
                 <TableHead>Evaluador</TableHead>
-                <TableHead className="text-right">Puntaje General</TableHead>
+                <TableHead className="text-right">Calificación Final</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -39,8 +45,8 @@ export default function ReportsPage() {
                     <TableCell>{evaluation.date}</TableCell>
                     <TableCell>{evaluation.evaluator}</TableCell>
                     <TableCell className="text-right">
-                       <Badge variant={evaluation.overallScore > 90 ? "default" : "secondary"} className={evaluation.overallScore > 90 ? "bg-accent text-accent-foreground" : ""}>
-                          {evaluation.overallScore}
+                       <Badge variant={getBadgeVariant(evaluation.overallScore)} className={evaluation.overallScore >= 9 ? "bg-accent text-accent-foreground" : ""}>
+                          {evaluation.overallScore.toFixed(2)}
                        </Badge>
                     </TableCell>
                   </TableRow>

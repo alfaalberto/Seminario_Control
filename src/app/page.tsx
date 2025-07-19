@@ -59,9 +59,11 @@ function LoginPageContent() {
             <div className="flex justify-center items-center mb-4">
                <Logo />
             </div>
-          <CardTitle className="text-2xl font-bold tracking-tight">ThesisEval</CardTitle>
+          <CardTitle className="text-2xl font-bold tracking-tight">Seminario SEPI</CardTitle>
           <CardDescription>
-            Inicia sesión para evaluar presentaciones de tesis
+            Plataforma de Evaluación del Seminario Departamental
+            <br />
+            <span className="font-semibold">Maestría en Ciencias en Ingeniería Electrónica</span>
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -77,7 +79,7 @@ function LoginPageContent() {
                   <Input 
                     id="email" 
                     type="email" 
-                    placeholder="profesor@universidad.edu" 
+                    placeholder="profesor@sepi.esime" 
                     required 
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
