@@ -47,21 +47,47 @@ export const semesters = [
 
 export type Semester = (typeof semesters)[number];
 
-export const evaluationCriteria: Record<Semester, string[]> = {
-  Primero: ['Reporte Final (40%)', 'Presentación en Seminario (40%)', 'Asistencia (20%)'],
-  Segundo: ['Reporte Final (40%)', 'Presentación en Seminario (40%)', 'Asistencia (20%)'],
-  Tercero: ['Reporte Final (40%)', 'Presentación en Seminario (40%)', 'Asistencia (20%)'],
-  Cuarto: ['Reporte Final (40%)', 'Presentación en Seminario (40%)', 'Asistencia (20%)'],
-  Quinto: ['Reporte Final (40%)', 'Presentación en Seminario (40%)', 'Asistencia (20%)'],
+type Criterion = {
+    name: string;
+    weight: number; // Weight is a value between 0 and 1
 };
 
-export const criteriaStrings: Record<Semester, string> = {
-    Primero: 'Reporte Final, Presentación en Seminario, y Asistencia. La presentación debe durar máximo 20 minutos y la sesión de preguntas y respuestas otros 20 minutos.',
-    Segundo: 'Reporte Final, Presentación en Seminario, y Asistencia. La presentación debe durar máximo 20 minutos y la sesión de preguntas y respuestas otros 20 minutos.',
-    Tercero: 'Reporte Final, Presentación en Seminario, y Asistencia. La presentación debe durar máximo 20 minutos y la sesión de preguntas y respuestas otros 20 minutos.',
-    Cuarto: 'Reporte Final, Presentación en Seminario, y Asistencia. La presentación debe durar máximo 20 minutos y la sesión de preguntas y respuestas otros 20 minutos.',
-    Quinto: 'Reporte Final, Presentación en Seminario, y Asistencia. La presentación debe durar máximo 20 minutos y la sesión de preguntas y respuestas otros 20 minutos.',
-}
+export const evaluationCriteria: Record<Semester, Criterion[]> = {
+  Primero: [
+      { name: 'Propuesta de Tesis (60%)', weight: 0.6 },
+      { name: 'Presentación (30%)', weight: 0.3 },
+      { name: 'Asistencia (10%)', weight: 0.1 },
+  ],
+  Segundo: [
+      { name: 'Avance de Tesis (60%)', weight: 0.6 },
+      { name: 'Presentación (30%)', weight: 0.3 },
+      { name: 'Asistencia (10%)', weight: 0.1 },
+  ],
+  Tercero: [
+      { name: 'Artículo de Congreso (60%)', weight: 0.6 },
+      { name: 'Presentación (30%)', weight: 0.3 },
+      { name: 'Asistencia (10%)', weight: 0.1 },
+  ],
+  Cuarto: [
+      { name: 'Borrador de Tesis (60%)', weight: 0.6 },
+      { name: 'Presentación (30%)', weight: 0.3 },
+      { name: 'Asistencia (10%)', weight: 0.1 },
+  ],
+  Quinto: [
+      { name: 'Artículo para Revista (60%)', weight: 0.6 },
+      { name: 'Presentación (30%)', weight: 0.3 },
+      { name: 'Asistencia (10%)', weight: 0.1 },
+  ],
+};
+
+export const criteriaStrings: Record<Semester, string> = Object.entries(
+  evaluationCriteria
+).reduce((acc, [semester, criteria]) => {
+  const criteriaNames = criteria.map(c => c.name).join(', ');
+  acc[semester as Semester] = `${criteriaNames}. La presentación debe durar máximo 20 minutos y la sesión de preguntas y respuestas otros 20 minutos.`;
+  return acc;
+}, {} as Record<Semester, string>);
+
 
 export type Evaluation = {
     id: string;

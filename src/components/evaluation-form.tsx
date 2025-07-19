@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useMemo } from "react";
+import { useState, useTransition, useMemo, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -32,6 +32,13 @@ export function EvaluationForm({ students, evaluator }: EvaluationFormProps) {
   const [aiComments, setAiComments] = useState("");
   
   const [isPending, startTransition] = useTransition();
+
+  const currentCriteria = useMemo(() => evaluationCriteria[selectedSemester], [selectedSemester]);
+
+  useEffect(() => {
+    // Reset scores when semester changes
+    setScores({});
+  }, [selectedSemester]);
 
   const handleScoreChange = (criterion: string, value: number) => {
     setScores((prev) => ({ ...prev, [criterion]: value }));
@@ -67,15 +74,13 @@ export function EvaluationForm({ students, evaluator }: EvaluationFormProps) {
     });
   };
 
-  const currentCriteria = evaluationCriteria[selectedSemester];
-
   const overallScore = useMemo(() => {
-    const reportScore = (scores['Reporte Final (40%)'] || 0) * 0.4;
-    const presentationScore = (scores['Presentación en Seminario (40%)'] || 0) * 0.4;
-    const attendanceScore = (scores['Asistencia (20%)'] || 0) * 0.2;
-    const finalScore = reportScore + presentationScore + attendanceScore;
-    return parseFloat(finalScore.toFixed(2));
-  }, [scores]);
+    const totalScore = currentCriteria.reduce((acc, criterion) => {
+        const score = scores[criterion.name] || 0;
+        return acc + score * criterion.weight;
+    }, 0);
+    return parseFloat(totalScore.toFixed(2));
+  }, [scores, currentCriteria]);
 
 
   const handleSave = () => {
@@ -182,18 +187,18 @@ export function EvaluationForm({ students, evaluator }: EvaluationFormProps) {
           <h3 className="text-lg font-medium mb-4">Criterios de Evaluación (0-10)</h3>
           <div className="space-y-6">
             {currentCriteria.map((criterion) => (
-              <div key={criterion} className="space-y-3">
+              <div key={criterion.name} className="space-y-3">
                 <div className="flex justify-between items-center">
-                    <Label htmlFor={criterion}>{criterion}</Label>
-                    <span className="text-sm font-medium text-primary w-12 text-center rounded-md bg-muted px-2 py-1">{scores[criterion] || 0}</span>
+                    <Label htmlFor={criterion.name}>{criterion.name}</Label>
+                    <span className="text-sm font-medium text-primary w-12 text-center rounded-md bg-muted px-2 py-1">{scores[criterion.name] || 0}</span>
                 </div>
                 <Slider
-                  id={criterion}
+                  id={criterion.name}
                   min={0}
                   max={10}
                   step={0.1}
-                  value={[scores[criterion] || 0]}
-                  onValueChange={(value) => handleScoreChange(criterion, value[0])}
+                  value={[scores[criterion.name] || 0]}
+                  onValueChange={(value) => handleScoreChange(criterion.name, value[0])}
                 />
               </div>
             ))}
