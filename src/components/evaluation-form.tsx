@@ -118,7 +118,10 @@ export function EvaluationForm({ students, evaluator }: EvaluationFormProps) {
         semester: selectedSemester,
         date: format(new Date(), 'yyyy-MM-dd'),
         evaluator: evaluator.name,
+        scores: scores,
         overallScore: overallScore,
+        professorPrompt: professorPrompt,
+        aiComments: aiComments,
     };
 
     addEvaluation(newEvaluation);
@@ -262,7 +265,7 @@ export function EvaluationForm({ students, evaluator }: EvaluationFormProps) {
                         id="ai-comments"
                         placeholder="Los comentarios generados por IA aparecerán aquí..."
                         value={aiComments}
-                        readOnly
+                        onChange={(e) => setAiComments(e.target.value)}
                         rows={5}
                         className="bg-muted"
                     />
