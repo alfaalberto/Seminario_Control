@@ -5,7 +5,7 @@ import React, { createContext, useContext, useState, ReactNode, useEffect } from
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut, type User as FirebaseUser } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from '@/lib/firebase';
-import { seedInitialData } from '@/lib/firestore';
+import { seedInitialData } from '@/lib/firestore'; // We still need this for other data
 import type { Professor } from '@/lib/data';
 import { useToast } from './use-toast';
 
@@ -14,7 +14,6 @@ interface AuthContextType {
   firebaseUser: FirebaseUser | null;
   isAdmin: boolean;
   isAuthLoading: boolean;
-  isInitializing: boolean; 
   login: (email: string, pass: string) => Promise<Professor | null>;
   logout: () => void;
 }
@@ -25,21 +24,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [authenticatedUser, setAuthenticatedUser] = useState<Professor | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
-  const [isInitializing, setIsInitializing] = useState(true);
   const { toast } = useToast();
   
+  // This effect will run once on mount to seed non-user data if necessary
   useEffect(() => {
-    const initializeApp = async () => {
-      try {
-        await seedInitialData();
-      } catch (error) {
-        console.error("Error seeding data:", error);
-        // We don't block the app if seeding fails, but we log the error.
-      } finally {
-        setIsInitializing(false);
-      }
+    const initializeData = async () => {
+        try {
+            await seedInitialData();
+        } catch (error) {
+            console.error("Error during initial data seeding:", error);
+        }
     };
-    initializeApp();
+    initializeData();
   }, []);
   
   useEffect(() => {
@@ -47,14 +43,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsAuthLoading(true);
       if (user) {
         setFirebaseUser(user);
-        // Fetch user profile from Firestore
         const userDocRef = doc(db, "users", user.uid);
         const userDocSnap = await getDoc(userDocRef);
         if (userDocSnap.exists()) {
           setAuthenticatedUser({ id: userDocSnap.id, ...userDocSnap.data() } as Professor);
         } else {
-          // This case might happen if the user exists in Auth but not in Firestore.
-          // For this app's logic, we'll treat them as not fully authenticated.
           setAuthenticatedUser(null);
         }
       } else {
@@ -81,6 +74,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setFirebaseUser(user);
         return userProfile;
       }
+      // If user exists in Auth but not Firestore, something is wrong.
+      // For a robust system, we might create the profile here. For now, we deny login.
+      toast({
+        variant: "destructive",
+        title: "Error de Perfil",
+        description: "El usuario existe pero no se encontró su perfil en la base de datos.",
+      });
+      await signOut(auth);
       return null;
     } catch (error: any) {
       console.error("Firebase Auth Error:", error.code);
@@ -109,8 +110,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const isAdmin = authenticatedUser?.role === 'admin';
 
+  // We remove isInitializing and pass a simplified value set
   return (
-    <AuthContext.Provider value={{ firebaseUser, authenticatedUser, isAdmin, isAuthLoading, isInitializing, login, logout }}>
+    <AuthContext.Provider value={{ firebaseUser, authenticatedUser, isAdmin, isAuthLoading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

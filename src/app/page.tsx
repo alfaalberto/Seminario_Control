@@ -14,7 +14,7 @@ import { Loader2 } from 'lucide-react';
 
 function LoginPageContent() {
   const router = useRouter();
-  const { login, isInitializing } = useAuth(); // Get isInitializing state
+  const { login, isAuthLoading } = useAuth(); // We now only need isAuthLoading
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -46,8 +46,8 @@ function LoginPageContent() {
     }
   };
 
-  const isFormDisabled = isLoading || isInitializing;
-  const buttonText = isInitializing ? 'Inicializando aplicación...' : (isLoading ? 'Iniciando...' : 'Iniciar Sesión');
+  const isFormDisabled = isLoading || isAuthLoading;
+  const buttonText = isAuthLoading ? 'Cargando...' : (isLoading ? 'Iniciando...' : 'Iniciar Sesión');
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
@@ -90,7 +90,7 @@ function LoginPageContent() {
               />
             </div>
             <Button type="submit" className="w-full" disabled={isFormDisabled}>
-              {(isLoading || isInitializing) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {(isLoading || isAuthLoading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {buttonText}
             </Button>
           </form>
