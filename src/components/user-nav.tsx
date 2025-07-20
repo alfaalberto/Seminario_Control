@@ -16,7 +16,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import Link from "next/link"
 import { useAuth } from "@/hooks/use-auth"
 import { useRouter } from "next/navigation";
 
@@ -34,7 +33,8 @@ export function UserNav() {
   }
 
   const getFallback = (name: string) => {
-    return name.substring(0, 1).toUpperCase();
+    // Ensure name exists before trying to access it.
+    return name ? name.substring(0, 1).toUpperCase() : '';
   }
 
   return (
