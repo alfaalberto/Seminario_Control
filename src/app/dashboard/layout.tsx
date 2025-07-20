@@ -92,9 +92,7 @@ export default function DashboardLayout({
           </div>
         </header>
         <main className="flex-1 overflow-y-auto">
-          <SidebarInset>
-            <div className="p-4 md:p-6">{children}</div>
-          </SidebarInset>
+          <div className="p-4 md:p-6">{children}</div>
         </main>
       </div>
     </SidebarProvider>
