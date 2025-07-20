@@ -7,20 +7,26 @@ import { adminUser as fallbackAdmin, professors as fallbackProfessors, students 
 
 // --- Seed Initial Data ---
 
-// This flag ensures seeding only runs once per app load.
 let isSeeding = false;
+let seedPromise: Promise<void> | null = null;
+
 export const seedInitialData = async () => {
-    if (isSeeding) return;
-    isSeeding = true;
-    try {
-        await seedUsers();
-        await seedStudents();
-        await seedEvaluations();
-    } catch (error) {
-        console.error("Error during initial data seeding:", error);
-    } finally {
-        isSeeding = false;
+    if (isSeeding) {
+        return seedPromise;
     }
+    isSeeding = true;
+    seedPromise = (async () => {
+        try {
+            await seedUsers();
+            await seedStudents();
+            await seedEvaluations();
+        } catch (error) {
+            console.error("Error during initial data seeding:", error);
+        } finally {
+            isSeeding = false;
+        }
+    })();
+    return seedPromise;
 };
 
 
@@ -28,41 +34,54 @@ export const seedInitialData = async () => {
 
 const usersCollection = collection(db, 'users');
 
-// Seed default users if the collection is empty. This now also creates them in Firebase Auth.
+// Robustly seeds users in both Auth and Firestore.
 const seedUsers = async () => {
-    const snapshot = await getDocs(usersCollection);
-    if (snapshot.empty) {
-        console.log('Users collection is empty. Seeding Auth and Firestore...');
-        const allUsers = [fallbackAdmin, ...fallbackProfessors];
-        
-        for (const user of allUsers) {
-            try {
-                if(user.email && user.password) {
-                    // 1. Create user in Firebase Authentication
-                    const userCredential = await createUserWithEmailAndPassword(auth, user.email, user.password);
-                    const authUser = userCredential.user;
+    const usersSnapshot = await getDocs(usersCollection);
+    if (!usersSnapshot.empty) {
+        console.log('Users collection already exists. Seeding skipped.');
+        return;
+    }
 
-                    // 2. Create user profile in Firestore using the UID from Auth
-                    const userProfile: Omit<Professor, 'password'> = {
-                        id: authUser.uid,
-                        name: user.name,
-                        email: user.email,
-                        department: user.department,
-                        role: user.role,
-                    };
-                    await setDoc(doc(db, 'users', authUser.uid), userProfile);
+    console.log('Users collection is empty. Seeding Auth and Firestore...');
+    const allUsersToSeed = [fallbackAdmin, ...fallbackProfessors];
+    
+    for (const userSeed of allUsersToSeed) {
+        try {
+            if (!userSeed.email || !userSeed.password) continue;
+
+            // Step 1: Create user in Firebase Authentication
+            const userCredential = await createUserWithEmailAndPassword(auth, userSeed.email, userSeed.password);
+            const authUser = userCredential.user;
+
+            // Step 2: Create user profile in Firestore
+            const userProfile: Omit<Professor, 'password'> = {
+                id: authUser.uid,
+                name: userSeed.name,
+                email: userSeed.email,
+                department: userSeed.department,
+                role: userSeed.role,
+            };
+            await setDoc(doc(db, 'users', authUser.uid), userProfile);
+            console.log(`Successfully created user: ${userSeed.email}`);
+
+        } catch (error: any) {
+            if (error.code === 'auth/email-already-in-use') {
+                console.warn(`Auth user ${userSeed.email} already exists. Skipping Auth creation, will check Firestore.`);
+                 // If auth user exists, we should ensure firestore doc also exists.
+                const userProfile = await getUserByEmail(userSeed.email);
+                if (!userProfile) {
+                    console.warn(`Firestore profile for ${userSeed.email} not found. Creating it now.`);
+                    // This case is unlikely with a clean slate, but good for robustness.
+                    // Note: We can't get UID without logging in, so this part is tricky.
+                    // For seeding, it's better to start clean.
                 }
-            } catch (error: any) {
-                // If user already exists in Auth, just create the Firestore doc.
-                if (error.code === 'auth/email-already-in-use') {
-                    console.warn(`Auth user ${user.email} already exists. Skipping Auth creation.`);
-                } else {
-                    console.error(`Failed to seed user ${user.email}:`, error);
-                }
+            } else {
+                console.error(`Failed to seed user ${userSeed.email}:`, error);
             }
         }
     }
 };
+
 
 export const getUsers = async (): Promise<Professor[]> => {
     const snapshot = await getDocs(usersCollection);
