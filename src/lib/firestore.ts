@@ -1,6 +1,7 @@
 // src/lib/firestore.ts
-import { db } from './firebase';
-import { collection, getDocs, doc, setDoc, addDoc, updateDoc, deleteDoc, query, where, getDoc } from 'firebase/firestore';
+import { db, auth } from './firebase';
+import { collection, getDocs, doc, setDoc, addDoc, updateDoc, deleteDoc, query, where, getDoc, writeBatch } from 'firebase/firestore';
+import { createUserWithEmailAndPassword, deleteUser as deleteAuthUser } from "firebase/auth";
 import type { Professor, Student, Evaluation } from './data';
 import { adminUser as fallbackAdmin, professors as fallbackProfessors, students as fallbackStudents, mockEvaluations as fallbackEvaluations } from './data';
 
@@ -8,18 +9,33 @@ import { adminUser as fallbackAdmin, professors as fallbackProfessors, students 
 
 const usersCollection = collection(db, 'users');
 
-// Seed default users if the collection is empty
+// Seed default users if the collection is empty. This now also creates them in Firebase Auth.
 export const seedUsers = async () => {
     const snapshot = await getDocs(usersCollection);
     if (snapshot.empty) {
-        console.log('Users collection is empty. Seeding...');
-        // Ensure the full admin user object, including password, is used for seeding.
+        console.log('Users collection is empty. Seeding Auth and Firestore...');
         const allUsers = [fallbackAdmin, ...fallbackProfessors];
+        
         for (const user of allUsers) {
-            // We use user.id as the document ID
-            const userDocRef = doc(db, 'users', user.id);
-            // The user object from data.ts (fallbackAdmin, fallbackProfessors) contains the password.
-            await setDoc(userDocRef, user);
+            try {
+                if(user.email && user.password) {
+                    // 1. Create user in Firebase Authentication
+                    const userCredential = await createUserWithEmailAndPassword(auth, user.email, user.password);
+                    const authUser = userCredential.user;
+
+                    // 2. Create user profile in Firestore using the UID from Auth
+                    const userProfile: Omit<Professor, 'password'> = {
+                        id: authUser.uid,
+                        name: user.name,
+                        email: user.email,
+                        department: user.department,
+                        role: user.role,
+                    };
+                    await setDoc(doc(db, 'users', authUser.uid), userProfile);
+                }
+            } catch (error) {
+                console.error(`Failed to seed user ${user.email}:`, error);
+            }
         }
     }
 };
@@ -47,18 +63,24 @@ export const getUserByEmail = async (email: string): Promise<Professor | null> =
 
 
 export const addUser = async (user: Omit<Professor, 'id'>): Promise<string> => {
-    const docRef = await addDoc(usersCollection, user);
-    // update the document to include its own ID.
-    await updateDoc(docRef, { id: docRef.id });
-    return docRef.id;
+    // This function is now more complex because it has to interact with Auth and Firestore
+    // For this prototype, adding users via the UI is disabled for simplicity.
+    // In a real app, you would use Firebase Admin SDK on a server to create users.
+    throw new Error("Adding users directly from the client is not implemented for security reasons.");
 };
 
 export const updateUser = async (user: Professor): Promise<void> => {
     const userDoc = doc(db, 'users', user.id);
-    await updateDoc(userDoc, { ...user });
+    // We don't want to save the password field in firestore
+    const { password, ...userData } = user;
+    await updateDoc(userDoc, { ...userData });
 };
 
 export const deleteUser = async (userId: string): Promise<void> => {
+    // Similar to addUser, deleting auth users from the client is restricted.
+    // This requires an Admin SDK on a secure server.
+    // For the prototype, we will only delete the Firestore record.
+    console.warn("Deleting only Firestore record. Auth user remains. Implement Admin SDK for full deletion.");
     const userDoc = doc(db, 'users', userId);
     await deleteDoc(userDoc);
 };
@@ -71,10 +93,12 @@ export const seedStudents = async () => {
     const snapshot = await getDocs(studentsCollection);
     if (snapshot.empty) {
         console.log('Students collection is empty. Seeding...');
-        for (const student of fallbackStudents) {
-             const studentDocRef = doc(db, 'students', student.id);
-             await setDoc(studentDocRef, student);
-        }
+        const batch = writeBatch(db);
+        fallbackStudents.forEach(student => {
+            const docRef = doc(db, 'students', student.id);
+            batch.set(docRef, student);
+        });
+        await batch.commit();
     }
 };
 
@@ -109,10 +133,12 @@ export const seedEvaluations = async () => {
     const snapshot = await getDocs(evaluationsCollection);
     if(snapshot.empty) {
         console.log('Evaluations collection is empty. Seeding...');
-        for (const evaluation of fallbackEvaluations) {
-            const evalDocRef = doc(db, 'evaluations', evaluation.id);
-            await setDoc(evalDocRef, evaluation);
-        }
+        const batch = writeBatch(db);
+        fallbackEvaluations.forEach(evaluation => {
+            const docRef = doc(db, 'evaluations', evaluation.id);
+            batch.set(docRef, evaluation);
+        });
+        await batch.commit();
     }
 }
 

@@ -10,9 +10,6 @@ import { Logo } from '@/components/logo';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { FormEvent, useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { getUserByEmail } from '@/lib/firestore';
-import { adminUser } from '@/lib/data';
 
 function LoginPageContent() {
   const router = useRouter();
@@ -20,63 +17,35 @@ function LoginPageContent() {
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [adminPassword, setAdminPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleProfessorLogin = async (e: FormEvent) => {
+  const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const user = await getUserByEmail(email);
-      
-      if (user && user.password === password && user.role !== 'admin') {
-        login(user);
+      const user = await login(email, password);
+      if (user) {
         router.push('/dashboard');
       } else {
-        toast({
+        // The hook now handles specific error toasts, but we can have a generic fallback.
+         toast({
           variant: "destructive",
           title: "Error de inicio de sesión",
           description: "El correo electrónico o la contraseña son incorrectos.",
         });
       }
-    } catch (error) {
-       toast({
-        variant: "destructive",
-        title: "Error de inicio de sesión",
-        description: "No se pudo conectar con la base de datos.",
-      });
+    } catch (error: any) {
+        // Error handling is improved in the hook, but we keep a catch-all here.
+        toast({
+            variant: "destructive",
+            title: "Error de inicio de sesión",
+            description: error.message || "Ocurrió un error inesperado.",
+        });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleAdminLogin = async (e: FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    try {
-        // In a real app, admin credentials would also be fetched securely.
-        // For this prototype, we use a local check but still log in the fetched user.
-        const admin = await getUserByEmail(adminUser.email);
-        if (admin && adminPassword === admin.password) {
-            login(admin);
-            router.push('/dashboard');
-        } else {
-             toast({
-                variant: "destructive",
-                title: "Error de inicio de sesión",
-                description: "La contraseña de administrador es incorrecta.",
-            });
-        }
-    } catch (error) {
-        toast({
-            variant: "destructive",
-            title: "Error de inicio de sesión",
-            description: "No se pudo verificar la cuenta de administrador.",
-        });
-    } finally {
-        setIsLoading(false);
-    }
-  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
@@ -93,60 +62,34 @@ function LoginPageContent() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="professor" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="professor">Profesor</TabsTrigger>
-              <TabsTrigger value="admin">Administrador</TabsTrigger>
-            </TabsList>
-            <TabsContent value="professor">
-              <form onSubmit={handleProfessorLogin} className="space-y-4 pt-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Correo Electrónico</Label>
-                  <Input 
-                    id="email" 
-                    type="email" 
-                    placeholder="profesor@sepi.esime" 
-                    required 
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    disabled={isLoading}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password">Contraseña</Label>
-                  <Input 
-                    id="password" 
-                    type="password" 
-                    required 
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    disabled={isLoading}
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? 'Iniciando...' : 'Iniciar Sesión como Profesor'}
-                </Button>
-              </form>
-            </TabsContent>
-            <TabsContent value="admin">
-                <form onSubmit={handleAdminLogin} className="space-y-4 pt-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="admin-password">Contraseña de Administrador</Label>
-                    <Input 
-                      id="admin-password" 
-                      type="password" 
-                      required 
-                      value={adminPassword}
-                      onChange={(e) => setAdminPassword(e.target.value)}
-                      disabled={isLoading}
-                    />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? 'Iniciando...' : 'Iniciar Sesión como Administrador'}
-                  </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
+           <form onSubmit={handleLogin} className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Correo Electrónico</Label>
+              <Input 
+                id="email" 
+                type="email" 
+                placeholder="usuario@sepi.esime" 
+                required 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Contraseña</Label>
+              <Input 
+                id="password" 
+                type="password" 
+                required 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={isLoading}
+              />
+            </div>
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? 'Iniciando...' : 'Iniciar Sesión'}
+            </Button>
+          </form>
         </CardContent>
       </Card>
     </div>

@@ -13,27 +13,29 @@ export const students: Student[] = [
 ];
 
 export type Professor = {
-  id: string;
+  id: string; // This ID will now correspond to the Firebase Auth UID
   name: string;
   department: string;
   email: string;
-  password?: string;
+  password?: string; // Password is now handled by Firebase Auth, this is for seeding only.
   role?: 'admin' | 'professor';
 };
 
+// IMPORTANT: The passwords here are ONLY for the initial seeding process.
+// Firebase Authentication will manage passwords securely after users are created.
 export const adminUser: Professor = {
-  id: 'admin',
+  id: 'firebase-admin-uid-placeholder', // This will be replaced by the actual UID from Auth
   name: 'Administrador SEPI',
   department: 'Administración del Sistema',
   email: 'admin@sepi.esime',
-  password: '1234',
+  password: '1234', // For initial creation only
   role: 'admin',
 };
 
 export const professors: Professor[] = [
-  { id: 'prof1', name: 'Dr. Alan Smith', department: 'Ciencias de la Computación', email: 'alan.smith@sepi.esime', password: 'tesis123', role: 'professor' },
-  { id: 'prof2', name: 'Dra. Maria Jones', department: 'Ingeniería de Software', email: 'maria.jones@sepi.esime', password: 'tesis123', role: 'professor' },
-  { id: 'prof3', name: 'Dr. David Williams', department: 'Sistemas Inteligentes', email: 'david.williams@sepi.esime', password: 'tesis123', role: 'professor' },
+  { id: 'firebase-prof1-uid-placeholder', name: 'Dr. Alan Smith', department: 'Ciencias de la Computación', email: 'alan.smith@sepi.esime', password: 'tesis123', role: 'professor' },
+  { id: 'firebase-prof2-uid-placeholder', name: 'Dra. Maria Jones', department: 'Ingeniería de Software', email: 'maria.jones@sepi.esime', password: 'tesis123', role: 'professor' },
+  { id: 'firebase-prof3-uid-placeholder', name: 'Dr. David Williams', department: 'Sistemas Inteligentes', email: 'david.williams@sepi.esime', password: 'tesis123', role: 'professor' },
 ];
 
 
