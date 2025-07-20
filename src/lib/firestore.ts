@@ -62,11 +62,22 @@ export const getUserByEmail = async (email: string): Promise<Professor | null> =
 };
 
 
-export const addUser = async (user: Omit<Professor, 'id'>): Promise<string> => {
-    // This function is now more complex because it has to interact with Auth and Firestore
-    // For this prototype, adding users via the UI is disabled for simplicity.
-    // In a real app, you would use Firebase Admin SDK on a server to create users.
-    throw new Error("Adding users directly from the client is not implemented for security reasons.");
+export const addUser = async (user: Omit<Professor, 'id'> & { password?: string }): Promise<string> => {
+    if (!user.password || !user.email) {
+        throw new Error("Password and email are required to create a new user.");
+    }
+    const userCredential = await createUserWithEmailAndPassword(auth, user.email, user.password);
+    const authUser = userCredential.user;
+
+    const userProfile: Omit<Professor, 'password'> = {
+        id: authUser.uid,
+        name: user.name,
+        email: user.email,
+        department: user.department,
+        role: user.role,
+    };
+    await setDoc(doc(db, 'users', authUser.uid), userProfile);
+    return authUser.uid;
 };
 
 export const updateUser = async (user: Professor): Promise<void> => {
@@ -77,9 +88,8 @@ export const updateUser = async (user: Professor): Promise<void> => {
 };
 
 export const deleteUser = async (userId: string): Promise<void> => {
-    // Similar to addUser, deleting auth users from the client is restricted.
-    // This requires an Admin SDK on a secure server.
-    // For the prototype, we will only delete the Firestore record.
+    // This is a simplified deletion. For a real app, you'd use a Cloud Function
+    // to delete the Auth user when the Firestore doc is deleted.
     console.warn("Deleting only Firestore record. Auth user remains. Implement Admin SDK for full deletion.");
     const userDoc = doc(db, 'users', userId);
     await deleteDoc(userDoc);

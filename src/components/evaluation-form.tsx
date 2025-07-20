@@ -93,7 +93,7 @@ export function EvaluationForm({ evaluator }: EvaluationFormProps) {
   }, [scores, currentCriteria, selectedSemester]);
 
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const selectedStudent = students.find(s => s.id === selectedStudentId);
     if (!selectedStudent) {
          toast({
@@ -113,8 +113,7 @@ export function EvaluationForm({ evaluator }: EvaluationFormProps) {
         return;
     }
 
-    const newEvaluation: Evaluation = {
-        id: `eval-${Date.now()}`,
+    const newEvaluation: Omit<Evaluation, 'id'> = {
         studentName: selectedStudent.name,
         semester: selectedSemester,
         date: format(new Date(), 'yyyy-MM-dd'),
@@ -125,20 +124,28 @@ export function EvaluationForm({ evaluator }: EvaluationFormProps) {
         aiComments: aiComments,
     };
 
-    addEvaluation(newEvaluation);
-    
-    toast({
-        title: "Evaluación Guardada",
-        description: "La evaluación del estudiante ha sido registrada exitosamente.",
-        className: "bg-accent text-accent-foreground"
-    });
-    
-    // Reset form
-    setSelectedStudentId("");
-    setSelectedSemester("Primero");
-    setScores({});
-    setProfessorPrompt("");
-    setAiComments("");
+    try {
+      await addEvaluation(newEvaluation);
+      
+      toast({
+          title: "Evaluación Guardada",
+          description: "La evaluación del estudiante ha sido registrada exitosamente en Firestore.",
+          className: "bg-accent text-accent-foreground"
+      });
+      
+      // Reset form
+      setSelectedStudentId("");
+      setSelectedSemester("Primero");
+      setScores({});
+      setProfessorPrompt("");
+      setAiComments("");
+    } catch (error) {
+       toast({
+            variant: "destructive",
+            title: "Error al Guardar",
+            description: "No se pudo guardar la evaluación en la base de datos.",
+        });
+    }
   };
 
   return (

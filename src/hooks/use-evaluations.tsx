@@ -1,57 +1,55 @@
 // src/hooks/use-evaluations.tsx
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { mockEvaluations, type Evaluation } from '@/lib/data';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
+import type { Evaluation } from '@/lib/data';
+import { getEvaluations, addEvaluation as addEvaluationService } from '@/lib/firestore';
+import { useAuth } from './use-auth';
 
 interface EvaluationsContextType {
   evaluations: Evaluation[];
-  addEvaluation: (evaluation: Evaluation) => void;
+  isLoading: boolean;
+  addEvaluation: (evaluation: Omit<Evaluation, 'id'>) => Promise<void>;
+  refreshEvaluations: () => void;
 }
 
 const EvaluationsContext = createContext<EvaluationsContextType | undefined>(undefined);
 
 export const EvaluationsProvider = ({ children }: { children: ReactNode }) => {
-  // Initialize with an empty array for SSR consistency.
-  // Data will be loaded on the client-side in useEffect.
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { authenticatedUser } = useAuth();
 
-  useEffect(() => {
-    // This code runs only on the client after the initial render.
+  const fetchEvaluations = useCallback(async () => {
+    setIsLoading(true);
     try {
-      const storedEvaluations = localStorage.getItem('evaluations');
-      if (storedEvaluations) {
-        setEvaluations(JSON.parse(storedEvaluations));
-      } else {
-        // If localStorage is empty, use mock data and save it for future client-side loads.
-        setEvaluations(mockEvaluations);
-        localStorage.setItem('evaluations', JSON.stringify(mockEvaluations));
-      }
+      const evaluationList = await getEvaluations();
+      setEvaluations(evaluationList);
     } catch (error) {
-      console.error("Failed to load/parse evaluations from localStorage", error);
-      // Fallback to mock data if there's an error during parsing.
-      setEvaluations(mockEvaluations);
+      console.error("Error fetching evaluations from Firestore:", error);
+    } finally {
+      setIsLoading(false);
     }
-  }, []); // Empty dependency array means this effect runs once after the initial render.
+  }, []);
 
   useEffect(() => {
-    // Save to localStorage whenever evaluations change, but only on the client.
-    if (typeof window !== 'undefined') {
-      try {
-        localStorage.setItem('evaluations', JSON.stringify(evaluations));
-      } catch (error) {
-         console.error("Failed to save evaluations to localStorage", error);
-      }
+    if (authenticatedUser) {
+        fetchEvaluations();
     }
-  }, [evaluations]);
+  }, [authenticatedUser, fetchEvaluations]);
 
-
-  const addEvaluation = (evaluation: Evaluation) => {
-    setEvaluations(prev => [...prev, evaluation]);
+  const addEvaluation = async (evaluation: Omit<Evaluation, 'id'>) => {
+    try {
+        await addEvaluationService(evaluation);
+        fetchEvaluations(); // Refresh list after adding
+    } catch (error) {
+        console.error("Error adding evaluation:", error);
+        throw error;
+    }
   };
 
   return (
-    <EvaluationsContext.Provider value={{ evaluations, addEvaluation }}>
+    <EvaluationsContext.Provider value={{ evaluations, isLoading, addEvaluation, refreshEvaluations: fetchEvaluations }}>
       {children}
     </EvaluationsContext.Provider>
   );
