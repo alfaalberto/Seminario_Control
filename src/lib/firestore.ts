@@ -1,73 +1,86 @@
 // src/lib/firestore.ts
 import { db, auth } from './firebase';
 import { collection, getDocs, doc, setDoc, addDoc, updateDoc, deleteDoc, query, where, getDoc, writeBatch } from 'firebase/firestore';
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import type { Professor, Student, Evaluation } from './data';
 import { adminUser as fallbackAdmin, professors as fallbackProfessors, students as fallbackStudents, mockEvaluations as fallbackEvaluations } from './data';
 
-// --- Seed Initial Data ---
 
 export const seedInitialData = async () => {
-    try {
-        console.log("Starting data seeding process...");
-        await seedUsers();
-        await seedStudents();
-        await seedEvaluations();
-        console.log("Data seeding process completed successfully.");
-    } catch (error) {
-        console.error("Error during initial data seeding:", error);
-        throw new Error("Failed to seed initial data.");
-    }
+    console.log("Starting data seeding process...");
+    await seedUsers();
+    await seedStudents();
+    await seedEvaluations();
+    console.log("Data seeding process completed successfully.");
 };
 
 
 // --- Users (Professors & Admin) ---
-
 const usersCollection = collection(db, 'users');
 
 const seedUsers = async () => {
-    console.log("Checking if default users need to be seeded...");
     const allUsersToSeed = [fallbackAdmin, ...fallbackProfessors];
     
     for (const userSeed of allUsersToSeed) {
-        try {
-            if (!userSeed.email || !userSeed.password) {
-                console.warn(`Skipping user seed for ${userSeed.name} due to missing email or password.`);
-                continue;
-            }
+        if (!userSeed.email || !userSeed.password) {
+            console.warn(`Skipping user seed for ${userSeed.name} due to missing email or password.`);
+            continue;
+        }
 
+        try {
             // Check if user profile exists in Firestore by email
             const userQuery = query(usersCollection, where("email", "==", userSeed.email));
             const userSnapshot = await getDocs(userQuery);
 
             if (userSnapshot.empty) {
-                console.log(`User ${userSeed.email} not found in Firestore. Creating Auth user and Firestore profile...`);
+                console.log(`User profile for ${userSeed.email} not found. Attempting to create Auth user and Firestore profile...`);
                 
-                // Step 1: Create user in Firebase Authentication
+                // This will create the user in Firebase Auth.
+                // It might throw 'auth/email-already-in-use', which we catch below.
                 const userCredential = await createUserWithEmailAndPassword(auth, userSeed.email, userSeed.password);
                 const authUser = userCredential.user;
 
-                // Step 2: Create user profile in Firestore, using the UID from Auth as the document ID
+                // Create user profile in Firestore, using the UID from Auth.
                 const userProfile: Professor = {
-                    id: authUser.uid, // Use the real Auth UID
+                    id: authUser.uid,
                     name: userSeed.name,
                     email: userSeed.email,
                     department: userSeed.department,
                     role: userSeed.role,
                 };
                 await setDoc(doc(db, 'users', authUser.uid), userProfile);
-                console.log(`Successfully created user: ${userSeed.email} with UID ${authUser.uid}`);
+                console.log(`Successfully created user and profile for: ${userSeed.email}`);
             } else {
-                 console.log(`User profile for ${userSeed.email} already exists. Seeding skipped for this user.`);
+                 console.log(`User profile for ${userSeed.email} already exists. Seeding skipped.`);
             }
 
         } catch (error: any) {
+            // This is a common case: Auth user exists but Firestore doc was deleted.
             if (error.code === 'auth/email-already-in-use') {
-                console.warn(`Auth user ${userSeed.email} already exists. Ensuring Firestore profile is synced.`);
-                // If auth user exists, but firestore doc was empty, we should still try to create the doc.
-                // We need to get the UID of the existing auth user. This is complex without Admin SDK.
-                // For this app's purpose, we'll assume if auth exists, the profile should too.
-                // The current logic handles if the profile is missing.
+                console.warn(`Auth user ${userSeed.email} already exists, but profile was missing. Re-creating profile.`);
+                try {
+                    // We need the UID, so we have to sign in briefly to get it.
+                    const userCredential = await signInWithEmailAndPassword(auth, userSeed.email, userSeed.password);
+                    const authUser = userCredential.user;
+                    
+                     const userProfile: Professor = {
+                        id: authUser.uid,
+                        name: userSeed.name,
+                        email: userSeed.email,
+                        department: userSeed.department,
+                        role: userSeed.role,
+                    };
+
+                    await setDoc(doc(db, 'users', authUser.uid), userProfile, { merge: true }); // Use merge to be safe
+                    console.log(`Successfully re-synced profile for ${userSeed.email}`);
+                    // Sign out the temporary user if it's not the currently logged-in one
+                    if (auth.currentUser && auth.currentUser.uid === authUser.uid) {
+                        await auth.signOut();
+                    }
+
+                } catch (syncError) {
+                    console.error(`Failed to re-sync profile for ${userSeed.email}:`, syncError);
+                }
             } else {
                 console.error(`Failed to seed user ${userSeed.email}:`, error);
             }
@@ -86,16 +99,6 @@ export const getUserById = async (id: string): Promise<Professor | null> => {
     const docSnap = await getDoc(docRef);
     return docSnap.exists() ? docSnap.data() as Professor : null;
 };
-
-export const getUserByEmail = async (email: string): Promise<Professor | null> => {
-    const q = query(usersCollection, where("email", "==", email));
-    const snapshot = await getDocs(q);
-    if (snapshot.empty) {
-        return null;
-    }
-    return snapshot.docs[0].data() as Professor;
-};
-
 
 export const addUser = async (user: Omit<Professor, 'id'> & { password?: string }): Promise<string> => {
     if (!user.password || !user.email) {
@@ -117,22 +120,19 @@ export const addUser = async (user: Omit<Professor, 'id'> & { password?: string 
 
 export const updateUser = async (user: Professor): Promise<void> => {
     const userDoc = doc(db, 'users', user.id);
+    // Exclude password from update object as it's not stored in Firestore
     const { password, ...userData } = user;
     await updateDoc(userDoc, { ...userData });
 };
 
 export const deleteUser = async (userId: string): Promise<void> => {
-    // IMPORTANT: Deleting a Firebase Auth user from the client-side is a privileged
-    // operation and requires the Admin SDK. For a client-side only app,
-    // the common practice is to only delete the user's profile data from Firestore.
-    // The Auth user will remain, but will be "orphaned" without a profile.
+    // Client-side SDK cannot delete Auth users. This action only deletes the Firestore profile.
     console.warn("Deleting only Firestore record for user. Auth user remains.");
     const userDoc = doc(db, 'users', userId);
     await deleteDoc(userDoc);
 };
 
 // --- Students ---
-
 const studentsCollection = collection(db, 'students');
 
 const seedStudents = async () => {
@@ -141,8 +141,8 @@ const seedStudents = async () => {
         console.log('Students collection is empty. Seeding...');
         const batch = writeBatch(db);
         fallbackStudents.forEach(student => {
-            const docRef = doc(studentsCollection); // Create with auto-generated ID
-            batch.set(docRef, { ...student, id: docRef.id }); // Add the auto-ID to the document data
+            const docRef = doc(studentsCollection);
+            batch.set(docRef, { ...student, id: docRef.id });
         });
         await batch.commit();
     }
@@ -171,7 +171,6 @@ export const deleteStudent = async (studentId: string): Promise<void> => {
 
 
 // --- Evaluations ---
-
 const evaluationsCollection = collection(db, 'evaluations');
 
 const seedEvaluations = async () => {
@@ -180,8 +179,8 @@ const seedEvaluations = async () => {
         console.log('Evaluations collection is empty. Seeding...');
         const batch = writeBatch(db);
         fallbackEvaluations.forEach(evaluation => {
-             const docRef = doc(evaluationsCollection); // Create with auto-generated ID
-             batch.set(docRef, {...evaluation, id: docRef.id}); // Add the auto-ID to the document data
+             const docRef = doc(evaluationsCollection);
+             batch.set(docRef, {...evaluation, id: docRef.id});
         });
         await batch.commit();
     }

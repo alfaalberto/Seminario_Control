@@ -31,7 +31,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     // This function runs once when the app loads.
     const initializeApp = async () => {
-      setIsInitializing(true);
       try {
         await seedInitialData();
         console.log("Initial data seeding process completed.");
@@ -43,6 +42,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           description: "No se pudieron cargar los datos iniciales de la aplicación.",
         });
       } finally {
+        // This is the most important part: always finish initializing.
         setIsInitializing(false);
       }
     };
