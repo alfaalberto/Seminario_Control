@@ -1,25 +1,53 @@
 // src/app/dashboard/reports/page.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useEvaluations } from "@/hooks/use-evaluations";
 import { Badge } from "@/components/ui/badge";
-import { type Evaluation, type Semester, evaluationCriteria } from "@/lib/data";
+import { type Evaluation, type Semester, evaluationCriteria, semesters } from "@/lib/data";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EvaluationChart } from "@/components/evaluation-chart";
 
 export default function ReportsPage() {
   const { evaluations, isLoading } = useEvaluations();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedEvaluation, setSelectedEvaluation] = useState<Evaluation | null>(null);
+
+  const chartData = useMemo(() => {
+    if (!evaluations || evaluations.length === 0) {
+      return [];
+    }
+
+    const semesterAverages: Record<Semester, { totalScore: number, count: number }> = {
+      Primero: { totalScore: 0, count: 0 },
+      Segundo: { totalScore: 0, count: 0 },
+      Tercero: { totalScore: 0, count: 0 },
+      Cuarto: { totalScore: 0, count: 0 },
+      Quinto: { totalScore: 0, count: 0 },
+    };
+
+    evaluations.forEach(evaluation => {
+      if (semesterAverages[evaluation.semester]) {
+        semesterAverages[evaluation.semester].totalScore += evaluation.overallScore;
+        semesterAverages[evaluation.semester].count++;
+      }
+    });
+
+    return semesters.map(semester => ({
+      name: semester,
+      "Calificación Promedio": semesterAverages[semester].count > 0 
+        ? parseFloat((semesterAverages[semester].totalScore / semesterAverages[semester].count).toFixed(2)) 
+        : 0,
+    }));
+  }, [evaluations]);
 
   const getBadgeVariant = (score: number) => {
     if (score >= 9) return "default";
@@ -93,6 +121,21 @@ export default function ReportsPage() {
           <h1 className="text-3xl font-bold tracking-tight">Reportes de Evaluación</h1>
           <p className="text-muted-foreground">Ver y analizar registros de evaluaciones pasadas.</p>
         </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Rendimiento por Semestre</CardTitle>
+            <CardDescription>Calificación promedio de todas las evaluaciones para cada semestre.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <Skeleton className="h-[350px] w-full" />
+            ) : (
+              <EvaluationChart data={chartData} />
+            )}
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <div>
@@ -180,15 +223,15 @@ export default function ReportsPage() {
 
                 {selectedEvaluation.professorPrompt && (
                    <div>
-                      <Label htmlFor="prof-prompt-detail" className="font-semibold">Indicación del Profesor</Label>
-                      <p id="prof-prompt-detail" className="mt-1 text-sm text-muted-foreground p-3 bg-muted rounded-md">{selectedEvaluation.professorPrompt}</p>
+                      <h4 className="font-semibold">Indicación del Profesor</h4>
+                      <p className="mt-1 text-sm text-muted-foreground p-3 bg-muted rounded-md">{selectedEvaluation.professorPrompt}</p>
                    </div>
                 )}
                 
                 {selectedEvaluation.aiComments && (
                    <div>
-                      <Label htmlFor="ai-comments-detail" className="font-semibold">Comentarios de la IA</Label>
-                       <p id="ai-comments-detail" className="mt-1 text-sm text-muted-foreground p-3 bg-muted rounded-md whitespace-pre-wrap">{selectedEvaluation.aiComments}</p>
+                      <h4 className="font-semibold">Comentarios de la IA</h4>
+                       <p className="mt-1 text-sm text-muted-foreground p-3 bg-muted rounded-md whitespace-pre-wrap">{selectedEvaluation.aiComments}</p>
                    </div>
                 )}
                 
