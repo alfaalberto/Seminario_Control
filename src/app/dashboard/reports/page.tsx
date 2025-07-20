@@ -5,11 +5,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useEvaluations } from "@/hooks/use-evaluations";
 import { Badge } from "@/components/ui/badge";
-import type { Evaluation } from "@/lib/data";
+import { type Evaluation, type Semester, evaluationCriteria } from "@/lib/data"; // Corrected import for evaluationCriteria
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button"; // Import Button component
+import * as XLSX from "xlsx"; // Import xlsx library
+import { saveAs } from "file-saver"; // Import file-saver
 
 export default function ReportsPage() {
   const { evaluations } = useEvaluations();
@@ -27,6 +30,65 @@ export default function ReportsPage() {
     setIsDialogOpen(true);
   }
 
+  const exportToExcel = () => {
+    if (!evaluations || evaluations.length === 0) {
+      alert("No hay evaluaciones para exportar.");
+      return;
+    }
+
+    // Get all unique criterion names across all semesters for headers
+    const allCriterionNames = new Set<string>();
+    for (const semester in evaluationCriteria) {
+      evaluationCriteria[semester as Semester].forEach(criterion => {
+        allCriterionNames.add(criterion.name);
+      });
+    }
+    const sortedCriterionNames = Array.from(allCriterionNames).sort();
+
+    // Prepare the header row
+    const header = [
+      "ID Evaluación",
+      "Nombre Estudiante",
+      "Semestre",
+      "Fecha",
+      "Evaluador",
+      "Calificación Final",
+      ...sortedCriterionNames, // Dynamic criterion score headers
+      "Comentarios Profesor",
+      "Comentarios IA",
+    ];
+
+    // Prepare data rows
+    const data = evaluations.map(evalItem => {
+      const row: (string | number)[] = [
+        evalItem.id,
+        evalItem.studentName,
+        evalItem.semester,
+        evalItem.date,
+        evalItem.evaluator,
+        evalItem.overallScore,
+      ];
+
+      // Add scores for each criterion, default to 0 if not present
+      sortedCriterionNames.forEach(criterionName => {
+        row.push(evalItem.scores[criterionName] || 0);
+      });
+
+      row.push(evalItem.professorPrompt);
+      row.push(evalItem.aiComments);
+      return row;
+    });
+
+    const worksheet = XLSX.utils.aoa_to_sheet([header, ...data]);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Evaluaciones");
+
+    // Generate and download the Excel file
+    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    const dataBlob = new Blob([excelBuffer], { type: "application/octet-stream" });
+    saveAs(dataBlob, "reporte_evaluaciones.xlsx");
+  };
+
   return (
     <>
       <div className="space-y-6">
@@ -35,9 +97,12 @@ export default function ReportsPage() {
           <p className="text-muted-foreground">Ver y analizar registros de evaluaciones pasadas.</p>
         </div>
         <Card>
-          <CardHeader>
-            <CardTitle>Todas las Evaluaciones</CardTitle>
-            <CardDescription>Un historial completo de todas las evaluaciones registradas en el seminario. Haz clic en una fila para ver los detalles.</CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <div>
+              <CardTitle className="text-2xl font-bold">Todas las Evaluaciones</CardTitle>
+              <CardDescription>Un historial completo de todas las evaluaciones registradas en el seminario. Haz clic en una fila para ver los detalles.</CardDescription>
+            </div>
+            <Button onClick={exportToExcel}>Exportar a Excel</Button> {/* Export Button */}
           </CardHeader>
           <CardContent>
             <Table>
@@ -97,7 +162,7 @@ export default function ReportsPage() {
                          <span>{criterion}</span>
                          <span className="font-mono font-semibold text-primary">{score.toFixed(1)}</span>
                        </div>
-                    ))}
+                    ))}\
                      <Separator className="my-2"/>
                       <div className="flex justify-between items-center font-bold">
                          <span>Calificación Final Ponderada</span>

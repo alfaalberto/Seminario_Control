@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/sidebar';
 import { UserNav } from '@/components/user-nav';
 import { Logo } from '@/components/logo';
+import { ThemeToggle } from '@/components/theme-toggle'; // Import ThemeToggle
 
 export default function DashboardLayout({
   children,
@@ -85,7 +86,10 @@ export default function DashboardLayout({
           <div className="flex-1">
              {/* Can add breadcrumbs or page title here */}
           </div>
-          <UserNav />
+          <div className="flex items-center gap-4"> {/* New div to group ThemeToggle and UserNav */}
+            <ThemeToggle /> {/* Theme Toggle Button */}
+            <UserNav />
+          </div>
         </header>
         <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
       </SidebarInset>

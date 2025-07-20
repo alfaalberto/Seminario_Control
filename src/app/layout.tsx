@@ -5,6 +5,7 @@ import { ProfessorsProvider } from '@/hooks/use-professors';
 import { EvaluationsProvider } from '@/hooks/use-evaluations';
 import { AuthProvider } from '@/hooks/use-auth';
 import { StudentsProvider } from '@/hooks/use-students';
+import { ThemeProvider } from "next-themes"; // Import ThemeProvider
 
 export const metadata: Metadata = {
   title: 'Seminario SEPI',
@@ -24,16 +25,23 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
-        <AuthProvider>
-          <StudentsProvider>
-            <ProfessorsProvider>
-              <EvaluationsProvider>
-                {children}
-              </EvaluationsProvider>
-            </ProfessorsProvider>
-          </StudentsProvider>
-        </AuthProvider>
-        <Toaster />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <AuthProvider>
+            <StudentsProvider>
+              <ProfessorsProvider>
+                <EvaluationsProvider>
+                  {children}
+                </EvaluationsProvider>
+              </ProfessorsProvider>
+            </StudentsProvider>
+          </AuthProvider>
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );

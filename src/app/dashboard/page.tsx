@@ -1,7 +1,24 @@
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, ClipboardEdit, Users } from "lucide-react";
+import { useEvaluations } from "@/hooks/use-evaluations"; // Import useEvaluations
+import { useStudents } from "@/hooks/use-students";     // Import useStudents
 
 export default function DashboardPage() {
+  const { evaluations } = useEvaluations();
+  const { students } = useStudents();
+
+  // Calculate total evaluations
+  const totalEvaluations = evaluations.length;
+
+  // Calculate total students
+  const totalStudents = students.length;
+
+  // For "Evaluaciones Pendientes", we'll use a static value 
+  // as there's no 'status' field in the Evaluation type to derive this.
+  const pendingEvaluations = 5; // Placeholder
+
   return (
     <div className="space-y-6">
       <div className="space-y-2">
@@ -16,8 +33,8 @@ export default function DashboardPage() {
             <BarChart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">125</div>
-            <p className="text-xs text-muted-foreground">+12 desde el último semestre</p>
+            <div className="text-2xl font-bold">{totalEvaluations}</div>
+            <p className="text-xs text-muted-foreground">{`+${totalEvaluations - 0} desde el último semestre`}</p> {/* Placeholder for dynamic change */}
           </CardContent>
         </Card>
         <Card>
@@ -26,7 +43,7 @@ export default function DashboardPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">23</div>
+            <div className="text-2xl font-bold">{totalStudents}</div>
             <p className="text-xs text-muted-foreground">Activos este semestre</p>
           </CardContent>
         </Card>
@@ -36,7 +53,7 @@ export default function DashboardPage() {
             <ClipboardEdit className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">5</div>
+            <div className="text-2xl font-bold">{pendingEvaluations}</div>
             <p className="text-xs text-muted-foreground">Para revisión final</p>
           </CardContent>
         </Card>
