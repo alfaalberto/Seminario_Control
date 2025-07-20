@@ -2,8 +2,9 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { collection, addDoc, getDocs, orderBy, query } from "firebase/firestore";
+import { db } from '@/lib/firebase';
 import type { Evaluation } from '@/lib/data';
-import { mockEvaluations } from '@/lib/data'; // Import mock data
 import { useAuth } from './use-auth';
 
 interface EvaluationsContextType {
@@ -20,28 +21,42 @@ export const EvaluationsProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const { authenticatedUser } = useAuth();
 
-  const fetchEvaluations = () => {
+  const fetchEvaluations = async () => {
+    if (!authenticatedUser) {
+        setEvaluations([]);
+        setIsLoading(false);
+        return;
+    }
     setIsLoading(true);
-    // Simulate fetching data
-    setTimeout(() => {
-      setEvaluations(mockEvaluations);
-      setIsLoading(false);
-    }, 300);
+    try {
+        const evaluationsCollection = collection(db, "evaluations");
+        const q = query(evaluationsCollection, orderBy("date", "desc"));
+        const querySnapshot = await getDocs(q);
+        const evalsData = querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        } as Evaluation));
+        setEvaluations(evalsData);
+    } catch (error) {
+        console.error("Error fetching evaluations:", error);
+    } finally {
+        setIsLoading(false);
+    }
   };
 
   useEffect(() => {
-    if (authenticatedUser) {
-        fetchEvaluations();
-    }
+    fetchEvaluations();
   }, [authenticatedUser]);
 
   const addEvaluation = async (evaluation: Omit<Evaluation, 'id'>) => {
-    console.log("Adding evaluation (mock):", evaluation);
-    const newEvaluation = {
-      ...evaluation,
-      id: `eval${Math.random().toString(36).substr(2, 9)}`,
-    };
-    setEvaluations(prev => [newEvaluation, ...prev]);
+    try {
+      const evaluationsCollection = collection(db, "evaluations");
+      await addDoc(evaluationsCollection, evaluation);
+      fetchEvaluations(); // Refresh the list after adding
+    } catch (error) {
+      console.error("Error adding evaluation:", error);
+      throw error; // Re-throw to be caught in the component
+    }
   };
 
   return (

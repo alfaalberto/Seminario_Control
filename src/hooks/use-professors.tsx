@@ -2,10 +2,10 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { collection, doc, getDocs, addDoc, updateDoc, deleteDoc, query, where } from "firebase/firestore";
+import { db } from '@/lib/firebase';
 import type { Professor } from '@/lib/data';
-import { adminUser as mockAdmin, professors as mockProfessors } from '@/lib/data'; // Import mock data
 import { useAuth } from './use-auth';
-
 
 interface ProfessorsContextType {
   professors: Professor[];
@@ -25,39 +25,74 @@ export const ProfessorsProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const { authenticatedUser } = useAuth();
 
-  const fetchUsers = () => {
-    setIsLoading(true);
-    // Simulate fetching data
-    setTimeout(() => {
-      setAdminUser({ ...mockAdmin, id: 'admin' });
-      setProfessors(mockProfessors.map((p, i) => ({ ...p, id: `prof-${i}` })));
-      setIsLoading(false);
-    }, 300);
-  };
-
-  useEffect(() => {
-    if (authenticatedUser) {
-        fetchUsers();
+  const fetchUsers = async () => {
+     if (!authenticatedUser) {
+        setProfessors([]);
+        setAdminUser(null);
+        setIsLoading(false);
+        return;
     }
+    setIsLoading(true);
+    try {
+      const usersCollection = collection(db, "users");
+      const q = query(usersCollection);
+      const querySnapshot = await getDocs(q);
+      const usersData: Professor[] = [];
+      querySnapshot.forEach(doc => {
+          usersData.push({ id: doc.id, ...doc.data() } as Professor);
+      });
+      
+      const admin = usersData.find(u => u.role === 'admin') || null;
+      const profs = usersData.filter(u => u.role === 'professor');
+      
+      setAdminUser(admin);
+      setProfessors(profs);
+
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  useEffect(() => {
+    fetchUsers();
   }, [authenticatedUser]);
 
   const addProfessor = async (professor: Omit<Professor, 'id'>) => {
-    const newProfessor = { ...professor, id: `prof-${Date.now()}` };
-    setProfessors(prev => [...prev, newProfessor]);
-    console.log("Adding professor (mock):", newProfessor);
+    // Note: This only creates the Firestore record. The Auth user should be created separately.
+    // For this app, we're simplifying and assuming auth user creation is handled elsewhere or not needed for this step.
+    try {
+      const usersCollection = collection(db, "users");
+      await addDoc(usersCollection, professor);
+      fetchUsers();
+    } catch(error) {
+       console.error("Error adding professor:", error);
+       throw error;
+    }
   };
 
   const updateProfessor = async (updatedProfessor: Professor) => {
-    setProfessors(prev => prev.map(p => p.id === updatedProfessor.id ? updatedProfessor : p));
-    if (updatedProfessor.id === 'admin') {
-      setAdminUser(updatedProfessor);
+    try {
+      const professorDocRef = doc(db, "users", updatedProfessor.id);
+      const { id, ...dataToUpdate } = updatedProfessor;
+      await updateDoc(professorDocRef, dataToUpdate);
+      fetchUsers();
+    } catch (error) {
+      console.error("Error updating professor:", error);
+      throw error;
     }
-    console.log("Updating professor (mock):", updatedProfessor);
   };
 
   const deleteProfessor = async (professorId: string) => {
-    setProfessors(prev => prev.filter(p => p.id !== professorId));
-    console.log("Deleting professor (mock):", professorId);
+     try {
+      const professorDocRef = doc(db, "users", professorId);
+      await deleteDoc(professorDocRef);
+      fetchUsers();
+    } catch (error) {
+      console.error("Error deleting professor:", error);
+      throw error;
+    }
   };
 
   return (
