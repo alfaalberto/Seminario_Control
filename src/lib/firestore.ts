@@ -13,10 +13,12 @@ export const seedUsers = async () => {
     const snapshot = await getDocs(usersCollection);
     if (snapshot.empty) {
         console.log('Users collection is empty. Seeding...');
+        // Ensure the full admin user object, including password, is used for seeding.
         const allUsers = [fallbackAdmin, ...fallbackProfessors];
         for (const user of allUsers) {
             // We use user.id as the document ID
             const userDocRef = doc(db, 'users', user.id);
+            // The user object from data.ts (fallbackAdmin, fallbackProfessors) contains the password.
             await setDoc(userDocRef, user);
         }
     }
