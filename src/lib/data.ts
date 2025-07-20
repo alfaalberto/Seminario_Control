@@ -23,8 +23,7 @@ export type Professor = {
 
 // IMPORTANT: The passwords here are ONLY for the initial seeding process.
 // Firebase Authentication will manage passwords securely after users are created.
-export const adminUser: Professor = {
-  id: 'firebase-admin-uid-placeholder', // This will be replaced by the actual UID from Auth
+export const adminUser: Omit<Professor, 'id'> = {
   name: 'Administrador SEPI',
   department: 'Administración del Sistema',
   email: 'admin@sepi.esime',
@@ -32,10 +31,10 @@ export const adminUser: Professor = {
   role: 'admin',
 };
 
-export const professors: Professor[] = [
-  { id: 'firebase-prof1-uid-placeholder', name: 'Dr. Alan Smith', department: 'Ciencias de la Computación', email: 'alan.smith@sepi.esime', password: 'password123', role: 'professor' },
-  { id: 'firebase-prof2-uid-placeholder', name: 'Dra. Maria Jones', department: 'Ingeniería de Software', email: 'maria.jones@sepi.esime', password: 'password123', role: 'professor' },
-  { id: 'firebase-prof3-uid-placeholder', name: 'Dr. David Williams', department: 'Sistemas Inteligentes', email: 'david.williams@sepi.esime', password: 'password123', role: 'professor' },
+export const professors: Omit<Professor, 'id'>[] = [
+  { name: 'Dr. Alan Smith', department: 'Ciencias de la Computación', email: 'alan.smith@sepi.esime', password: 'password123', role: 'professor' },
+  { name: 'Dra. Maria Jones', department: 'Ingeniería de Software', email: 'maria.jones@sepi.esime', password: 'password123', role: 'professor' },
+  { name: 'Dr. David Williams', department: 'Sistemas Inteligentes', email: 'david.williams@sepi.esime', password: 'password123', role: 'professor' },
 ];
 
 
@@ -123,4 +122,5 @@ export const mockEvaluations: Evaluation[] = [
     { id: 'eval6', studentName: 'Carlos Rodríguez', semester: 'Segundo', date: '2023-05-20', evaluator: 'Dr. Alan Smith', overallScore: 8.9, scores: {'Marco Teórico Profundizado': 9, 'Metodología': 9, 'Modelo Analítico o Computacional': 9, 'Avances Prácticos o Simulados': 8.5, 'Plan de Trabajo Ajustado': 9}, professorPrompt: "Buen trabajo en general, los avances prácticos podrían ser más extensos.", aiComments: "El estudiante Carlos Rodríguez ha realizado un excelente trabajo en el modelado y la metodología. Para fortalecer los avances prácticos, se sugiere ampliar el número de pruebas o escenarios de simulación para dar mayor robustez a los resultados iniciales. El plan de trabajo está bien ajustado y es coherente." },
 ];
 
+    
     
