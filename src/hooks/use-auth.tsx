@@ -29,8 +29,20 @@ const allUsers: Professor[] = [
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [authenticatedUser, setAuthenticatedUser] = useState<Professor | null>(null);
-  const [isAuthLoading, setIsAuthLoading] = useState(false); // No initial loading needed
+  const [isAuthLoading, setIsAuthLoading] = useState(true); // Start loading until session is checked
   const { toast } = useToast();
+
+  useEffect(() => {
+    try {
+      const storedUser = sessionStorage.getItem('authenticatedUser');
+      if (storedUser) {
+        setAuthenticatedUser(JSON.parse(storedUser));
+      }
+    } catch (error) {
+      console.error("Failed to parse user from sessionStorage", error);
+    }
+    setIsAuthLoading(false);
+  }, []);
   
   const login = async (email: string, pass: string): Promise<Professor | null> => {
     setIsAuthLoading(true);
@@ -40,6 +52,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     if (foundUser) {
       setAuthenticatedUser(foundUser);
+      sessionStorage.setItem('authenticatedUser', JSON.stringify(foundUser));
       setIsAuthLoading(false);
       return foundUser;
     }
@@ -55,6 +68,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = () => {
     setAuthenticatedUser(null);
+    sessionStorage.removeItem('authenticatedUser'); // Clear session storage on logout
   };
 
   const isAdmin = authenticatedUser?.role === 'admin';
