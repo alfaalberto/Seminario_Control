@@ -5,12 +5,31 @@ import { createUserWithEmailAndPassword, deleteUser as deleteAuthUser } from "fi
 import type { Professor, Student, Evaluation } from './data';
 import { adminUser as fallbackAdmin, professors as fallbackProfessors, students as fallbackStudents, mockEvaluations as fallbackEvaluations } from './data';
 
+// --- Seed Initial Data ---
+
+// This flag ensures seeding only runs once per app load.
+let isSeeding = false;
+export const seedInitialData = async () => {
+    if (isSeeding) return;
+    isSeeding = true;
+    try {
+        await seedUsers();
+        await seedStudents();
+        await seedEvaluations();
+    } catch (error) {
+        console.error("Error during initial data seeding:", error);
+    } finally {
+        isSeeding = false;
+    }
+};
+
+
 // --- Users (Professors & Admin) ---
 
 const usersCollection = collection(db, 'users');
 
 // Seed default users if the collection is empty. This now also creates them in Firebase Auth.
-export const seedUsers = async () => {
+const seedUsers = async () => {
     const snapshot = await getDocs(usersCollection);
     if (snapshot.empty) {
         console.log('Users collection is empty. Seeding Auth and Firestore...');
@@ -33,15 +52,19 @@ export const seedUsers = async () => {
                     };
                     await setDoc(doc(db, 'users', authUser.uid), userProfile);
                 }
-            } catch (error) {
-                console.error(`Failed to seed user ${user.email}:`, error);
+            } catch (error: any) {
+                // If user already exists in Auth, just create the Firestore doc.
+                if (error.code === 'auth/email-already-in-use') {
+                    console.warn(`Auth user ${user.email} already exists. Skipping Auth creation.`);
+                } else {
+                    console.error(`Failed to seed user ${user.email}:`, error);
+                }
             }
         }
     }
 };
 
 export const getUsers = async (): Promise<Professor[]> => {
-    await seedUsers(); // Ensure data exists
     const snapshot = await getDocs(usersCollection);
     return snapshot.docs.map(doc => doc.data() as Professor);
 };
@@ -82,14 +105,11 @@ export const addUser = async (user: Omit<Professor, 'id'> & { password?: string 
 
 export const updateUser = async (user: Professor): Promise<void> => {
     const userDoc = doc(db, 'users', user.id);
-    // We don't want to save the password field in firestore
     const { password, ...userData } = user;
     await updateDoc(userDoc, { ...userData });
 };
 
 export const deleteUser = async (userId: string): Promise<void> => {
-    // This is a simplified deletion. For a real app, you'd use a Cloud Function
-    // to delete the Auth user when the Firestore doc is deleted.
     console.warn("Deleting only Firestore record. Auth user remains. Implement Admin SDK for full deletion.");
     const userDoc = doc(db, 'users', userId);
     await deleteDoc(userDoc);
@@ -99,7 +119,7 @@ export const deleteUser = async (userId: string): Promise<void> => {
 
 const studentsCollection = collection(db, 'students');
 
-export const seedStudents = async () => {
+const seedStudents = async () => {
     const snapshot = await getDocs(studentsCollection);
     if (snapshot.empty) {
         console.log('Students collection is empty. Seeding...');
@@ -113,7 +133,6 @@ export const seedStudents = async () => {
 };
 
 export const getStudents = async (): Promise<Student[]> => {
-    await seedStudents();
     const snapshot = await getDocs(studentsCollection);
     return snapshot.docs.map(doc => doc.data() as Student);
 };
@@ -139,7 +158,7 @@ export const deleteStudent = async (studentId: string): Promise<void> => {
 
 const evaluationsCollection = collection(db, 'evaluations');
 
-export const seedEvaluations = async () => {
+const seedEvaluations = async () => {
     const snapshot = await getDocs(evaluationsCollection);
     if(snapshot.empty) {
         console.log('Evaluations collection is empty. Seeding...');
@@ -153,7 +172,6 @@ export const seedEvaluations = async () => {
 }
 
 export const getEvaluations = async (): Promise<Evaluation[]> => {
-    await seedEvaluations();
     const snapshot = await getDocs(evaluationsCollection);
     return snapshot.docs.map(doc => doc.data() as Evaluation);
 };

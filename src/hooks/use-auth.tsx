@@ -4,7 +4,7 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, type User } from "firebase/auth";
 import type { Professor } from '@/lib/data';
-import { getUserById } from '@/lib/firestore';
+import { getUserById, seedInitialData } from '@/lib/firestore';
 import { app } from '@/lib/firebase';
 import { useToast } from './use-toast';
 
@@ -27,31 +27,46 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        setFirebaseUser(user);
-        // User is signed in, now get their profile from Firestore
-        const userProfile = await getUserById(user.uid);
-        if (userProfile) {
-          setAuthenticatedUser(userProfile);
+    // This function runs once when the app loads.
+    const initializeApp = async () => {
+      // It ensures our default users/students/evaluations exist before anything else happens.
+      await seedInitialData();
+
+      const unsubscribe = onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          setFirebaseUser(user);
+          const userProfile = await getUserById(user.uid);
+          if (userProfile) {
+            setAuthenticatedUser(userProfile);
+          } else {
+            console.error("User exists in Auth but not in Firestore DB.");
+            setAuthenticatedUser(null);
+            await signOut(auth); // Log out if profile is missing
+          }
         } else {
-          // This case should ideally not happen if user creation is handled correctly.
-          console.error("User exists in Auth but not in Firestore DB.");
+          setFirebaseUser(null);
           setAuthenticatedUser(null);
         }
-      } else {
-        // User is signed out
-        setFirebaseUser(null);
-        setAuthenticatedUser(null);
-      }
-      setIsAuthLoading(false);
+        setIsAuthLoading(false);
+      });
+      
+      // Return the unsubscribe function to be called on cleanup
+      return unsubscribe;
+    };
+
+    let unsubscribe: () => void;
+    initializeApp().then(unsub => {
+      if (unsub) unsubscribe = unsub;
     });
 
     // Cleanup subscription on unmount
-    return () => unsubscribe();
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, []);
 
   const login = async (email: string, pass: string) => {
+    setIsAuthLoading(true);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, pass);
       const user = userCredential.user;
@@ -82,6 +97,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         });
       }
       return null;
+    } finally {
+        setIsAuthLoading(false);
     }
   };
 
