@@ -1,7 +1,7 @@
 // src/lib/firestore.ts
 import { db, auth } from './firebase';
 import { collection, getDocs, doc, setDoc, addDoc, updateDoc, deleteDoc, query, where, getDoc, writeBatch } from 'firebase/firestore';
-import { createUserWithEmailAndPassword, deleteUser as deleteAuthUser } from "firebase/auth";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 import type { Professor, Student, Evaluation } from './data';
 import { adminUser as fallbackAdmin, professors as fallbackProfessors, students as fallbackStudents, mockEvaluations as fallbackEvaluations } from './data';
 
@@ -122,7 +122,11 @@ export const updateUser = async (user: Professor): Promise<void> => {
 };
 
 export const deleteUser = async (userId: string): Promise<void> => {
-    console.warn("Deleting only Firestore record. Auth user remains. Implement Admin SDK for full deletion.");
+    // IMPORTANT: Deleting a Firebase Auth user from the client-side is a privileged
+    // operation and requires the Admin SDK. For a client-side only app,
+    // the common practice is to only delete the user's profile data from Firestore.
+    // The Auth user will remain, but will be "orphaned" without a profile.
+    console.warn("Deleting only Firestore record for user. Auth user remains.");
     const userDoc = doc(db, 'users', userId);
     await deleteDoc(userDoc);
 };
