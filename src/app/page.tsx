@@ -8,47 +8,73 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/logo';
 import { useAuth } from '@/hooks/use-auth';
-import { useProfessors } from '@/hooks/use-professors';
 import { useToast } from '@/hooks/use-toast';
 import { FormEvent, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { getUserByEmail } from '@/lib/firestore';
+import { adminUser } from '@/lib/data';
 
 function LoginPageContent() {
   const router = useRouter();
   const { login } = useAuth();
-  const { adminUser, professors } = useProfessors();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleProfessorLogin = (e: FormEvent) => {
+  const handleProfessorLogin = async (e: FormEvent) => {
     e.preventDefault();
-    const user = professors.find(u => u.email === email);
-
-    if (user && user.password === password) {
-      login(user);
-      router.push('/dashboard');
-    } else {
-      toast({
+    setIsLoading(true);
+    try {
+      const user = await getUserByEmail(email);
+      
+      if (user && user.password === password && user.role !== 'admin') {
+        login(user);
+        router.push('/dashboard');
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error de inicio de sesión",
+          description: "El correo electrónico o la contraseña son incorrectos.",
+        });
+      }
+    } catch (error) {
+       toast({
         variant: "destructive",
         title: "Error de inicio de sesión",
-        description: "El correo electrónico o la contraseña son incorrectos.",
+        description: "No se pudo conectar con la base de datos.",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleAdminLogin = (e: FormEvent) => {
+  const handleAdminLogin = async (e: FormEvent) => {
     e.preventDefault();
-    if (adminUser.password === adminPassword) {
-      login(adminUser);
-      router.push('/dashboard');
-    } else {
-      toast({
-        variant: "destructive",
-        title: "Error de inicio de sesión",
-        description: "La contraseña de administrador es incorrecta.",
-      });
+    setIsLoading(true);
+    try {
+        // In a real app, admin credentials would also be fetched securely.
+        // For this prototype, we use a local check but still log in the fetched user.
+        const admin = await getUserByEmail(adminUser.email);
+        if (admin && adminPassword === admin.password) {
+            login(admin);
+            router.push('/dashboard');
+        } else {
+             toast({
+                variant: "destructive",
+                title: "Error de inicio de sesión",
+                description: "La contraseña de administrador es incorrecta.",
+            });
+        }
+    } catch (error) {
+        toast({
+            variant: "destructive",
+            title: "Error de inicio de sesión",
+            description: "No se pudo verificar la cuenta de administrador.",
+        });
+    } finally {
+        setIsLoading(false);
     }
   }
 
@@ -83,6 +109,7 @@ function LoginPageContent() {
                     required 
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    disabled={isLoading}
                   />
                 </div>
                 <div className="space-y-2">
@@ -93,10 +120,11 @@ function LoginPageContent() {
                     required 
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    disabled={isLoading}
                   />
                 </div>
-                <Button type="submit" className="w-full">
-                  Iniciar Sesión como Profesor
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? 'Iniciando...' : 'Iniciar Sesión como Profesor'}
                 </Button>
               </form>
             </TabsContent>
@@ -110,10 +138,11 @@ function LoginPageContent() {
                       required 
                       value={adminPassword}
                       onChange={(e) => setAdminPassword(e.target.value)}
+                      disabled={isLoading}
                     />
                   </div>
-                  <Button type="submit" className="w-full">
-                    Iniciar Sesión como Administrador
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? 'Iniciando...' : 'Iniciar Sesión como Administrador'}
                   </Button>
               </form>
             </TabsContent>

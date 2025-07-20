@@ -3,6 +3,7 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import type { Professor } from '@/lib/data';
+import { getUserById } from '@/lib/firestore'; // We'll use this to re-validate the user
 
 interface AuthContextType {
   authenticatedUser: Professor | null;
@@ -14,34 +15,42 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Este componente ahora es más simple. Solo maneja el estado de autenticación en la memoria de la app.
-// La persistencia real vendrá de los hooks que lean/escriban en Firestore.
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [authenticatedUser, setAuthenticatedUser] = useState<Professor | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
 
-  // Intentamos recuperar el usuario de sessionStorage para mantener la sesión en la misma pestaña.
   useEffect(() => {
-    try {
-      const storedUser = sessionStorage.getItem('authenticatedUser');
-      if (storedUser) {
-        setAuthenticatedUser(JSON.parse(storedUser));
+    const checkUserSession = async () => {
+      try {
+        const storedUserId = localStorage.getItem('authenticatedUserId');
+        if (storedUserId) {
+          // Re-fetch user from Firestore to ensure data is fresh
+          const userFromDb = await getUserById(storedUserId);
+          if (userFromDb) {
+            setAuthenticatedUser(userFromDb);
+          } else {
+            // User not found in DB, clear session
+            localStorage.removeItem('authenticatedUserId');
+          }
+        }
+      } catch (error) {
+        console.error("Failed to process user session", error);
+        localStorage.removeItem('authenticatedUserId');
+      } finally {
+        setIsAuthLoading(false);
       }
-    } catch (error) {
-      console.error("Failed to parse authenticated user from sessionStorage", error);
-      sessionStorage.removeItem('authenticatedUser');
-    }
-    setIsAuthLoading(false);
+    };
+    checkUserSession();
   }, []);
 
   const login = (user: Professor) => {
     setAuthenticatedUser(user);
-    sessionStorage.setItem('authenticatedUser', JSON.stringify(user));
+    localStorage.setItem('authenticatedUserId', user.id);
   };
 
   const logout = () => {
     setAuthenticatedUser(null);
-    sessionStorage.removeItem('authenticatedUser');
+    localStorage.removeItem('authenticatedUserId');
   };
 
   const isAdmin = authenticatedUser?.role === 'admin';
