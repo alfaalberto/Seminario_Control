@@ -18,14 +18,11 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useAuth } from "@/hooks/use-auth"
 import { useRouter } from "next/navigation";
+import { Skeleton } from "./ui/skeleton";
 
 export function UserNav() {
-  const { authenticatedUser, logout } = useAuth();
+  const { authenticatedUser, logout, isAuthLoading } = useAuth();
   const router = useRouter();
-
-  if (!authenticatedUser) {
-    return null;
-  }
 
   const handleLogout = () => {
     logout();
@@ -36,6 +33,15 @@ export function UserNav() {
     // Ensure name exists before trying to access it.
     return name ? name.substring(0, 1).toUpperCase() : '';
   }
+
+  if (isAuthLoading) {
+    return <Skeleton className="h-9 w-9 rounded-full" />;
+  }
+  
+  if (!authenticatedUser) {
+    return null;
+  }
+
 
   return (
     <DropdownMenu>
