@@ -34,7 +34,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsInitializing(true);
       try {
         await seedInitialData();
-        console.log("Initial data seeding completed successfully.");
+        console.log("Initial data seeding process completed.");
       } catch (error) {
         console.error("Critical error during data seeding:", error);
         toast({
