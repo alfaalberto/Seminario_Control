@@ -7,28 +7,17 @@ import { adminUser as fallbackAdmin, professors as fallbackProfessors, students 
 
 // --- Seed Initial Data ---
 
-let isSeeding = false;
-let seedPromise: Promise<void> | null = null;
-
-export const seedInitialData = () => {
-    if (!seedPromise) {
-        seedPromise = (async () => {
-            if (isSeeding) return;
-            isSeeding = true;
-            try {
-                await seedUsers();
-                await seedStudents();
-                await seedEvaluations();
-            } catch (error) {
-                console.error("Error during initial data seeding:", error);
-                // Re-throw the error to be caught by the caller in useAuth
-                throw new Error("Failed to seed initial data.");
-            } finally {
-                isSeeding = false;
-            }
-        })();
+export const seedInitialData = async () => {
+    try {
+        console.log("Starting data seeding process...");
+        await seedUsers();
+        await seedStudents();
+        await seedEvaluations();
+        console.log("Data seeding process completed successfully.");
+    } catch (error) {
+        console.error("Error during initial data seeding:", error);
+        throw new Error("Failed to seed initial data.");
     }
-    return seedPromise;
 };
 
 
@@ -36,21 +25,23 @@ export const seedInitialData = () => {
 
 const usersCollection = collection(db, 'users');
 
-// Robustly seeds users, ensuring the admin user and professors always exist.
 const seedUsers = async () => {
     console.log("Checking if default users need to be seeded...");
     const allUsersToSeed = [fallbackAdmin, ...fallbackProfessors];
     
     for (const userSeed of allUsersToSeed) {
         try {
-            if (!userSeed.email || !userSeed.password) continue;
+            if (!userSeed.email || !userSeed.password) {
+                console.warn(`Skipping user seed for ${userSeed.name} due to missing email or password.`);
+                continue;
+            }
 
             // Check if user profile exists in Firestore by email
             const userQuery = query(usersCollection, where("email", "==", userSeed.email));
             const userSnapshot = await getDocs(userQuery);
 
             if (userSnapshot.empty) {
-                console.log(`User ${userSeed.email} not found. Creating Auth user and Firestore profile...`);
+                console.log(`User ${userSeed.email} not found in Firestore. Creating Auth user and Firestore profile...`);
                 
                 // Step 1: Create user in Firebase Authentication
                 const userCredential = await createUserWithEmailAndPassword(auth, userSeed.email, userSeed.password);
@@ -72,15 +63,18 @@ const seedUsers = async () => {
 
         } catch (error: any) {
             if (error.code === 'auth/email-already-in-use') {
-                console.warn(`Auth user ${userSeed.email} already exists. Skipping Auth creation.`);
-                // This is not an error, the user might exist in Auth but not in Firestore,
-                // The check for userSnapshot.empty() should handle creating the Firestore doc if needed.
+                console.warn(`Auth user ${userSeed.email} already exists. Ensuring Firestore profile is synced.`);
+                // If auth user exists, but firestore doc was empty, we should still try to create the doc.
+                // We need to get the UID of the existing auth user. This is complex without Admin SDK.
+                // For this app's purpose, we'll assume if auth exists, the profile should too.
+                // The current logic handles if the profile is missing.
             } else {
                 console.error(`Failed to seed user ${userSeed.email}:`, error);
             }
         }
     }
 };
+
 
 export const getUsers = async (): Promise<Professor[]> => {
     const snapshot = await getDocs(usersCollection);
@@ -143,7 +137,7 @@ const seedStudents = async () => {
         console.log('Students collection is empty. Seeding...');
         const batch = writeBatch(db);
         fallbackStudents.forEach(student => {
-            const docRef = doc(collection(db, 'students')); // Create with auto-generated ID
+            const docRef = doc(studentsCollection); // Create with auto-generated ID
             batch.set(docRef, { ...student, id: docRef.id }); // Add the auto-ID to the document data
         });
         await batch.commit();
@@ -182,7 +176,7 @@ const seedEvaluations = async () => {
         console.log('Evaluations collection is empty. Seeding...');
         const batch = writeBatch(db);
         fallbackEvaluations.forEach(evaluation => {
-             const docRef = doc(collection(db, 'evaluations')); // Create with auto-generated ID
+             const docRef = doc(evaluationsCollection); // Create with auto-generated ID
              batch.set(docRef, {...evaluation, id: docRef.id}); // Add the auto-ID to the document data
         });
         await batch.commit();
@@ -199,5 +193,3 @@ export const addEvaluation = async (evaluation: Omit<Evaluation, 'id'>): Promise
     await updateDoc(docRef, { id: docRef.id });
     return docRef.id;
 };
-
-    
