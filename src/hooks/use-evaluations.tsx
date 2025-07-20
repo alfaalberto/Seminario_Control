@@ -1,6 +1,7 @@
+// src/hooks/use-evaluations.tsx
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { mockEvaluations, type Evaluation } from '@/lib/data';
 
 interface EvaluationsContextType {
@@ -11,7 +12,27 @@ interface EvaluationsContextType {
 const EvaluationsContext = createContext<EvaluationsContextType | undefined>(undefined);
 
 export const EvaluationsProvider = ({ children }: { children: ReactNode }) => {
-  const [evaluations, setEvaluations] = useState<Evaluation[]>(mockEvaluations);
+  const [evaluations, setEvaluations] = useState<Evaluation[]>(() => {
+    if (typeof window === 'undefined') {
+      return mockEvaluations;
+    }
+    try {
+      const storedEvaluations = localStorage.getItem('evaluations');
+      return storedEvaluations ? JSON.parse(storedEvaluations) : mockEvaluations;
+    } catch (error) {
+      console.error("Failed to parse evaluations from localStorage", error);
+      return mockEvaluations;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('evaluations', JSON.stringify(evaluations));
+    } catch (error) {
+       console.error("Failed to save evaluations to localStorage", error);
+    }
+  }, [evaluations]);
+
 
   const addEvaluation = (evaluation: Evaluation) => {
     setEvaluations(prev => [...prev, evaluation]);

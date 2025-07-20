@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { ProfessorsProvider } from '@/hooks/use-professors';
 import { EvaluationsProvider } from '@/hooks/use-evaluations';
 import { AuthProvider } from '@/hooks/use-auth';
+import { StudentsProvider } from '@/hooks/use-students';
 
 export const metadata: Metadata = {
   title: 'Seminario SEPI',
@@ -24,11 +25,13 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <AuthProvider>
-          <ProfessorsProvider>
-            <EvaluationsProvider>
-              {children}
-            </EvaluationsProvider>
-          </ProfessorsProvider>
+          <StudentsProvider>
+            <ProfessorsProvider>
+              <EvaluationsProvider>
+                {children}
+              </EvaluationsProvider>
+            </ProfessorsProvider>
+          </StudentsProvider>
         </AuthProvider>
         <Toaster />
       </body>

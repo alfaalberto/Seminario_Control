@@ -8,17 +8,18 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { students as initialStudents, type Student } from "@/lib/data";
+import { type Student } from "@/lib/data";
 import { PlusCircle, Edit, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { useEvaluations } from "@/hooks/use-evaluations";
 import { useAuth } from "@/hooks/use-auth";
+import { useStudents } from "@/hooks/use-students";
 
 
 function StudentsPageContent() {
   const { toast } = useToast();
-  const [students, setStudents] = useState<Student[]>(initialStudents);
+  const { students, addStudent, updateStudent, deleteStudent } = useStudents();
   const { evaluations } = useEvaluations();
   const { isAdmin } = useAuth();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -58,7 +59,7 @@ function StudentsPageContent() {
   };
   
   const handleDeleteClick = (studentId: string) => {
-    setStudents(students.filter(s => s.id !== studentId));
+    deleteStudent(studentId);
      toast({
         title: "Estudiante Eliminado",
         description: "El estudiante ha sido eliminado de la lista.",
@@ -82,7 +83,7 @@ function StudentsPageContent() {
 
     if (editingStudent) {
       // Edit existing student
-      setStudents(students.map(s => s.id === editingStudent.id ? formData : s));
+      updateStudent({ ...formData, id: editingStudent.id });
       toast({
         title: "Estudiante Actualizado",
         description: "La información del estudiante ha sido actualizada.",
@@ -91,7 +92,7 @@ function StudentsPageContent() {
     } else {
       // Add new student
       const newStudent = { ...formData, id: Date.now().toString() };
-      setStudents([...students, newStudent]);
+      addStudent(newStudent);
        toast({
         title: "Estudiante Agregado",
         description: "El nuevo estudiante ha sido agregado a la lista.",

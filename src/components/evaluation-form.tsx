@@ -17,14 +17,15 @@ import { useEvaluations } from "@/hooks/use-evaluations";
 import { format } from "date-fns";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useStudents } from "@/hooks/use-students";
 
 
 interface EvaluationFormProps {
-  students: Student[];
   evaluator: Professor;
 }
 
-export function EvaluationForm({ students, evaluator }: EvaluationFormProps) {
+export function EvaluationForm({ evaluator }: EvaluationFormProps) {
+  const { students } = useStudents();
   const { toast } = useToast();
   const { addEvaluation } = useEvaluations();
   const [selectedStudentId, setSelectedStudentId] = useState<string>("");

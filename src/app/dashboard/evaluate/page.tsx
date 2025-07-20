@@ -3,7 +3,6 @@
 
 import { EvaluationForm } from "@/components/evaluation-form";
 import { useAuth } from "@/hooks/use-auth";
-import { students } from "@/lib/data";
 
 
 export default function EvaluatePage() {
@@ -28,7 +27,6 @@ export default function EvaluatePage() {
       </div>
       
       <EvaluationForm 
-        students={students} 
         evaluator={authenticatedUser} 
       />
     </div>

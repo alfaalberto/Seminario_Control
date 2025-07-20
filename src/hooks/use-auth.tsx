@@ -19,21 +19,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthLoading, setIsAuthLoading] = useState(true);
 
   useEffect(() => {
-    const storedUser = sessionStorage.getItem('authenticatedUser');
-    if (storedUser) {
-      setAuthenticatedUser(JSON.parse(storedUser));
+    try {
+      const storedUser = localStorage.getItem('authenticatedUser');
+      if (storedUser) {
+        setAuthenticatedUser(JSON.parse(storedUser));
+      }
+    } catch (error) {
+      console.error("Failed to parse authenticated user from localStorage", error);
+      localStorage.removeItem('authenticatedUser');
     }
     setIsAuthLoading(false);
   }, []);
 
   const login = (user: Professor) => {
     setAuthenticatedUser(user);
-    sessionStorage.setItem('authenticatedUser', JSON.stringify(user));
+    localStorage.setItem('authenticatedUser', JSON.stringify(user));
   };
 
   const logout = () => {
     setAuthenticatedUser(null);
-    sessionStorage.removeItem('authenticatedUser');
+    localStorage.removeItem('authenticatedUser');
   };
 
   const isAdmin = authenticatedUser?.role === 'admin';
