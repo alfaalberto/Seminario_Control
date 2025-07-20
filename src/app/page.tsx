@@ -10,6 +10,7 @@ import { Logo } from '@/components/logo';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { FormEvent, useState } from 'react';
+import { Loader2 } from 'lucide-react';
 
 function LoginPageContent() {
   const router = useRouter();
@@ -25,21 +26,21 @@ function LoginPageContent() {
     try {
       const user = await login(email, password);
       if (user) {
-        router.push('/dashboard');
-      } else {
-        // The hook now handles specific error toasts, but we can have a generic fallback.
-         toast({
-          variant: "destructive",
-          title: "Error de inicio de sesión",
-          description: "El correo electrónico o la contraseña son incorrectos.",
+        toast({
+          title: "Inicio de Sesión Exitoso",
+          description: `Bienvenido de nuevo, ${user.name}.`,
+          className: "bg-accent text-accent-foreground"
         });
-      }
+        router.push('/dashboard');
+      } 
+      // The useAuth hook now handles specific error toasts, so we don't need a generic else here.
     } catch (error: any) {
-        // Error handling is improved in the hook, but we keep a catch-all here.
+        // This catch is a fallback for unexpected errors during the login process itself.
+        console.error("Login page error:", error);
         toast({
             variant: "destructive",
-            title: "Error de inicio de sesión",
-            description: error.message || "Ocurrió un error inesperado.",
+            title: "Error Inesperado",
+            description: "Ocurrió un error que no pudimos prever. Por favor, intenta de nuevo.",
         });
     } finally {
       setIsLoading(false);
@@ -81,12 +82,14 @@ function LoginPageContent() {
                 id="password" 
                 type="password" 
                 required 
+                placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
               />
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {isLoading ? 'Iniciando...' : 'Iniciar Sesión'}
             </Button>
           </form>
