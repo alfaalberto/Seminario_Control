@@ -80,8 +80,8 @@ export default function DashboardLayout({
           </SidebarMenu>
         </SidebarContent>
       </Sidebar>
-      <div className="flex flex-col flex-1">
-        <header className="flex h-16 items-center justify-between gap-4 border-b bg-card px-6 sticky top-0 z-10">
+      <div className="flex flex-col flex-1 h-screen">
+        <header className="flex h-16 items-center justify-between gap-4 border-b bg-card px-6 sticky top-0 z-10 flex-shrink-0">
           <SidebarTrigger className="md:hidden" />
           <div className="flex-1">
              {/* Can add breadcrumbs or page title here */}
@@ -91,9 +91,11 @@ export default function DashboardLayout({
             <UserNav />
           </div>
         </header>
-        <SidebarInset>
-          <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
-        </SidebarInset>
+        <main className="flex-1 overflow-y-auto">
+          <SidebarInset>
+            <div className="p-4 md:p-6">{children}</div>
+          </SidebarInset>
+        </main>
       </div>
     </SidebarProvider>
   );
