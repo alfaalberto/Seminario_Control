@@ -12,7 +12,8 @@ interface AuthContextType {
   authenticatedUser: Professor | null;
   firebaseUser: User | null;
   isAdmin: boolean;
-  isAuthLoading: boolean;
+  isAuthLoading: boolean; // For session changes
+  isInitializing: boolean; // For initial app setup and data seeding
   login: (email: string, pass: string) => Promise<Professor | null>;
   logout: () => void;
 }
@@ -24,46 +25,52 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
   const [authenticatedUser, setAuthenticatedUser] = useState<Professor | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const [isInitializing, setIsInitializing] = useState(true); // New state
   const { toast } = useToast();
 
   useEffect(() => {
     // This function runs once when the app loads.
     const initializeApp = async () => {
-      // It ensures our default users/students/evaluations exist before anything else happens.
-      await seedInitialData();
+      setIsInitializing(true);
+      try {
+        await seedInitialData();
+        console.log("Initial data seeding completed successfully.");
+      } catch (error) {
+        console.error("Critical error during data seeding:", error);
+        toast({
+          variant: "destructive",
+          title: "Error de Inicialización",
+          description: "No se pudieron cargar los datos iniciales de la aplicación.",
+        });
+      } finally {
+        setIsInitializing(false);
+      }
+    };
+    
+    initializeApp();
 
-      const unsubscribe = onAuthStateChanged(auth, async (user) => {
-        if (user) {
-          setFirebaseUser(user);
-          const userProfile = await getUserById(user.uid);
-          if (userProfile) {
-            setAuthenticatedUser(userProfile);
-          } else {
-            console.error("User exists in Auth but not in Firestore DB.");
-            setAuthenticatedUser(null);
-            await signOut(auth); // Log out if profile is missing
-          }
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setIsAuthLoading(true);
+      if (user) {
+        setFirebaseUser(user);
+        const userProfile = await getUserById(user.uid);
+        if (userProfile) {
+          setAuthenticatedUser(userProfile);
         } else {
-          setFirebaseUser(null);
+          console.error("User exists in Auth but not in Firestore DB. Logging out.");
           setAuthenticatedUser(null);
+          await signOut(auth);
         }
-        setIsAuthLoading(false);
-      });
-      
-      // Return the unsubscribe function to be called on cleanup
-      return unsubscribe;
-    };
-
-    let unsubscribe: () => void;
-    initializeApp().then(unsub => {
-      if (unsub) unsubscribe = unsub;
+      } else {
+        setFirebaseUser(null);
+        setAuthenticatedUser(null);
+      }
+      setIsAuthLoading(false);
     });
-
+    
     // Cleanup subscription on unmount
-    return () => {
-      if (unsubscribe) unsubscribe();
-    };
-  }, []);
+    return () => unsubscribe();
+  }, [toast]);
 
   const login = async (email: string, pass: string) => {
     setIsAuthLoading(true);
@@ -111,7 +118,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const isAdmin = authenticatedUser?.role === 'admin';
 
   return (
-    <AuthContext.Provider value={{ firebaseUser, authenticatedUser, isAdmin, isAuthLoading, login, logout }}>
+    <AuthContext.Provider value={{ firebaseUser, authenticatedUser, isAdmin, isAuthLoading, isInitializing, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

@@ -14,7 +14,7 @@ import { Loader2 } from 'lucide-react';
 
 function LoginPageContent() {
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, isInitializing } = useAuth(); // Get isInitializing state
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -33,9 +33,8 @@ function LoginPageContent() {
         });
         router.push('/dashboard');
       } 
-      // The useAuth hook now handles specific error toasts, so we don't need a generic else here.
+      // The useAuth hook now handles specific error toasts
     } catch (error: any) {
-        // This catch is a fallback for unexpected errors during the login process itself.
         console.error("Login page error:", error);
         toast({
             variant: "destructive",
@@ -47,6 +46,8 @@ function LoginPageContent() {
     }
   };
 
+  const isFormDisabled = isLoading || isInitializing;
+  const buttonText = isInitializing ? 'Inicializando aplicación...' : (isLoading ? 'Iniciando...' : 'Iniciar Sesión');
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
@@ -73,7 +74,7 @@ function LoginPageContent() {
                 required 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                disabled={isLoading}
+                disabled={isFormDisabled}
               />
             </div>
             <div className="space-y-2">
@@ -85,12 +86,12 @@ function LoginPageContent() {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                disabled={isLoading}
+                disabled={isFormDisabled}
               />
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isLoading ? 'Iniciando...' : 'Iniciar Sesión'}
+            <Button type="submit" className="w-full" disabled={isFormDisabled}>
+              {(isLoading || isInitializing) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {buttonText}
             </Button>
           </form>
         </CardContent>
