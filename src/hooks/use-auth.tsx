@@ -3,7 +3,7 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { type User as FirebaseUser } from "firebase/auth";
-import { adminUser, professors, type Professor } from '@/lib/data';
+import { adminUser, professors as mockProfessors, type Professor } from '@/lib/data';
 import { useToast } from './use-toast';
 
 // Simulate a delay to mimic network latency
@@ -20,10 +20,10 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Use local mock data
-const allUsers: Professor[] = [
+// Use local mock data as the base
+const initialUsers: Professor[] = [
   { ...adminUser, id: 'admin' },
-  ...professors.map((p, i) => ({ ...p, id: `prof-${i}`}))
+  ...mockProfessors.map((p, i) => ({ ...p, id: `prof-${i}`}))
 ];
 
 
@@ -48,7 +48,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setIsAuthLoading(true);
     await fakeApiCall(500); // Simulate network delay
 
-    const foundUser = allUsers.find(user => user.email === email && user.password === pass);
+    // Get persisted users from session storage if they exist
+    const persistedUsersString = sessionStorage.getItem('allUsers');
+    const allUsers = persistedUsersString ? JSON.parse(persistedUsersString) : initialUsers;
+
+    const foundUser = allUsers.find((user: Professor) => user.email === email && user.password === pass);
 
     if (foundUser) {
       setAuthenticatedUser(foundUser);

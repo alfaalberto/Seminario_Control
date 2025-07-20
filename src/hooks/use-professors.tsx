@@ -18,6 +18,12 @@ interface ProfessorsContextType {
 
 const ProfessorsContext = createContext<ProfessorsContextType | undefined>(undefined);
 
+const initialUsers: Professor[] = [
+    { ...mockAdmin, id: 'admin' },
+    ...mockProfessors.map((p, i) => ({ ...p, id: `prof-${i}`}))
+];
+
+
 export const ProfessorsProvider = ({ children }: { children: ReactNode }) => {
   const [allUsers, setAllUsers] = useState<Professor[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -26,16 +32,21 @@ export const ProfessorsProvider = ({ children }: { children: ReactNode }) => {
   const adminUser = allUsers.find(u => u.role === 'admin') || null;
   const professors = allUsers.filter(u => u.role === 'professor');
 
+  const updateSessionStorage = (users: Professor[]) => {
+     sessionStorage.setItem('allUsers', JSON.stringify(users));
+  }
+
   const refreshProfessors = () => {
       if (authenticatedUser) {
         setIsLoading(true);
         setTimeout(() => {
-           const initialUsers = [
-            { ...mockAdmin, id: 'admin' },
-            ...mockProfessors.map((p, i) => ({ ...p, id: `prof-${i}`}))
-          ];
-          setAllUsers(initialUsers);
-          setIsLoading(false);
+           const persistedUsersString = sessionStorage.getItem('allUsers');
+           const users = persistedUsersString ? JSON.parse(persistedUsersString) : initialUsers;
+           setAllUsers(users);
+           if (!persistedUsersString) {
+             updateSessionStorage(users);
+           }
+           setIsLoading(false);
         }, 300);
       }
   }
@@ -50,15 +61,21 @@ export const ProfessorsProvider = ({ children }: { children: ReactNode }) => {
 
   const addProfessor = async (professor: Omit<Professor, 'id'>) => {
     const newProfessor = { ...professor, id: `prof-${Date.now()}` };
-    setAllUsers(prev => [...prev, newProfessor]);
+    const updatedUsers = [...allUsers, newProfessor];
+    setAllUsers(updatedUsers);
+    updateSessionStorage(updatedUsers);
   };
 
   const updateProfessor = async (updatedProfessor: Professor) => {
-    setAllUsers(prev => prev.map(p => p.id === updatedProfessor.id ? updatedProfessor : p));
+    const updatedUsers = allUsers.map(p => p.id === updatedProfessor.id ? updatedProfessor : p);
+    setAllUsers(updatedUsers);
+    updateSessionStorage(updatedUsers);
   };
 
   const deleteProfessor = async (professorId: string) => {
-    setAllUsers(prev => prev.filter(p => p.id !== professorId));
+    const updatedUsers = allUsers.filter(p => p.id !== professorId);
+    setAllUsers(updatedUsers);
+    updateSessionStorage(updatedUsers);
   };
 
   return (
