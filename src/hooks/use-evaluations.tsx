@@ -1,9 +1,9 @@
 // src/hooks/use-evaluations.tsx
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import type { Evaluation } from '@/lib/data';
-import { getEvaluations, addEvaluation as addEvaluationService } from '@/lib/firestore';
+import { mockEvaluations } from '@/lib/data'; // Import mock data
 import { useAuth } from './use-auth';
 
 interface EvaluationsContextType {
@@ -20,32 +20,28 @@ export const EvaluationsProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const { authenticatedUser } = useAuth();
 
-  const fetchEvaluations = useCallback(async () => {
+  const fetchEvaluations = () => {
     setIsLoading(true);
-    try {
-      const evaluationList = await getEvaluations();
-      setEvaluations(evaluationList);
-    } catch (error) {
-      console.error("Error fetching evaluations from Firestore:", error);
-    } finally {
+    // Simulate fetching data
+    setTimeout(() => {
+      setEvaluations(mockEvaluations);
       setIsLoading(false);
-    }
-  }, []);
+    }, 300);
+  };
 
   useEffect(() => {
     if (authenticatedUser) {
         fetchEvaluations();
     }
-  }, [authenticatedUser, fetchEvaluations]);
+  }, [authenticatedUser]);
 
   const addEvaluation = async (evaluation: Omit<Evaluation, 'id'>) => {
-    try {
-        await addEvaluationService(evaluation);
-        fetchEvaluations(); // Refresh list after adding
-    } catch (error) {
-        console.error("Error adding evaluation:", error);
-        throw error;
-    }
+    console.log("Adding evaluation (mock):", evaluation);
+    const newEvaluation = {
+      ...evaluation,
+      id: `eval${Math.random().toString(36).substr(2, 9)}`,
+    };
+    setEvaluations(prev => [newEvaluation, ...prev]);
   };
 
   return (

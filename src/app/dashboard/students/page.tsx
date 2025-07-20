@@ -170,7 +170,7 @@ function StudentsPageContent() {
       <Card>
         <CardHeader>
           <CardTitle>Lista de Estudiantes</CardTitle>
-          <CardDescription>Una lista de todos los estudiantes en el programa, cargada desde Firestore.</CardDescription>
+          <CardDescription>Una lista de todos los estudiantes en el programa. (Datos de demostración)</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>

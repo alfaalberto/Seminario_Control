@@ -1,9 +1,9 @@
 // src/hooks/use-students.tsx
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import type { Student } from '@/lib/data';
-import { getStudents, addStudent as addStudentService, updateStudent as updateStudentService, deleteStudent as deleteStudentService } from '@/lib/firestore';
+import { students as mockStudents } from '@/lib/data'; // Import mock data
 import { useAuth } from './use-auth';
 
 interface StudentsContextType {
@@ -21,53 +21,35 @@ export const StudentsProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const { authenticatedUser } = useAuth();
 
-
-  const fetchStudents = useCallback(async () => {
+  const fetchStudents = () => {
     setIsLoading(true);
-    try {
-      const studentList = await getStudents();
-      setStudents(studentList);
-    } catch (error) {
-      console.error("Error fetching students from Firestore:", error);
-    } finally {
+    // Simulate fetching data
+    setTimeout(() => {
+      setStudents(mockStudents);
       setIsLoading(false);
-    }
-  }, []);
+    }, 300);
+  };
 
   useEffect(() => {
     if(authenticatedUser) {
         fetchStudents();
     }
-  }, [authenticatedUser, fetchStudents]);
+  }, [authenticatedUser]);
 
   const addStudent = async (student: Omit<Student, 'id'>) => {
-    try {
-        await addStudentService(student);
-        fetchStudents();
-    } catch (error) {
-        console.error("Error adding student:", error);
-        throw error;
-    }
+    const newStudent = { ...student, id: `student-${Date.now()}` };
+    setStudents(prev => [...prev, newStudent]);
+    console.log("Adding student (mock):", newStudent);
   };
 
   const updateStudent = async (updatedStudent: Student) => {
-    try {
-        await updateStudentService(updatedStudent);
-        fetchStudents();
-    } catch (error) {
-        console.error("Error updating student:", error);
-        throw error;
-    }
+    setStudents(prev => prev.map(s => s.id === updatedStudent.id ? updatedStudent : s));
+    console.log("Updating student (mock):", updatedStudent);
   };
 
   const deleteStudent = async (studentId: string) => {
-    try {
-        await deleteStudentService(studentId);
-        fetchStudents();
-    } catch (error) {
-        console.error("Error deleting student:", error);
-        throw error;
-    }
+    setStudents(prev => prev.filter(s => s.id !== studentId));
+    console.log("Deleting student (mock):", studentId);
   };
 
   return (

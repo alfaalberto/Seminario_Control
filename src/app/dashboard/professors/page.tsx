@@ -181,7 +181,7 @@ function ProfessorsPageContent() {
       <Card>
         <CardHeader>
           <CardTitle>Lista de Usuarios</CardTitle>
-          <CardDescription>Una lista de todos los usuarios del sistema, cargada desde Firestore.</CardDescription>
+          <CardDescription>Una lista de todos los usuarios del sistema. (Datos de demostración)</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>

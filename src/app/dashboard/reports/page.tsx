@@ -1,3 +1,4 @@
+// src/app/dashboard/reports/page.tsx
 "use client";
 
 import { useState } from "react";
@@ -96,7 +97,7 @@ export default function ReportsPage() {
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <div>
               <CardTitle className="text-2xl font-bold">Todas las Evaluaciones</CardTitle>
-              <CardDescription>Un historial completo de todas las evaluaciones registradas en el seminario. Haz clic en una fila para ver los detalles.</CardDescription>
+              <CardDescription>Un historial completo de todas las evaluaciones registradas. (Datos de demostración)</CardDescription>
             </div>
             <Button onClick={exportToExcel} disabled={isLoading || evaluations.length === 0}>Exportar a Excel</Button>
           </CardHeader>
