@@ -1,3 +1,6 @@
+// src/app/dashboard/layout.tsx
+"use client";
+
 import Link from 'next/link';
 import {
   Home,
@@ -5,12 +8,12 @@ import {
   BarChart,
   ClipboardEdit,
   BookUser,
+  Loader2,
 } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
   SidebarHeader,
-  SidebarInset,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
@@ -20,12 +23,32 @@ import {
 import { UserNav } from '@/components/user-nav';
 import { Logo } from '@/components/logo';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { useAuth } from '@/hooks/use-auth';
+import { useRouter } from 'next/navigation';
+import React from 'react';
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { authenticatedUser, isAuthLoading } = useAuth();
+  const router = useRouter();
+
+  React.useEffect(() => {
+    if (!isAuthLoading && !authenticatedUser) {
+      router.push('/');
+    }
+  }, [isAuthLoading, authenticatedUser, router]);
+  
+  if (isAuthLoading || !authenticatedUser) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
   return (
     <SidebarProvider>
       <Sidebar>
