@@ -2,9 +2,8 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { collection, addDoc, getDocs, orderBy, query } from "firebase/firestore";
-import { db } from '@/lib/firebase';
 import type { Evaluation } from '@/lib/data';
+import { mockEvaluations } from '@/lib/data';
 import { useAuth } from './use-auth';
 
 interface EvaluationsContextType {
@@ -21,46 +20,40 @@ export const EvaluationsProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const { authenticatedUser } = useAuth();
 
-  const fetchEvaluations = async () => {
-    if (!authenticatedUser) {
-        setEvaluations([]);
-        setIsLoading(false);
-        return;
-    }
-    setIsLoading(true);
-    try {
-        const evaluationsCollection = collection(db, "evaluations");
-        const q = query(evaluationsCollection, orderBy("date", "desc"));
-        const querySnapshot = await getDocs(q);
-        const evalsData = querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        } as Evaluation));
-        setEvaluations(evalsData);
-    } catch (error) {
-        console.error("Error fetching evaluations:", error);
-    } finally {
-        setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchEvaluations();
+    if (authenticatedUser) {
+      setIsLoading(true);
+      // Simulate fetching data
+      setTimeout(() => {
+        setEvaluations(mockEvaluations);
+        setIsLoading(false);
+      }, 500);
+    } else {
+      setEvaluations([]);
+    }
   }, [authenticatedUser]);
+  
+  const refreshEvaluations = () => {
+     if (authenticatedUser) {
+      setIsLoading(true);
+      setTimeout(() => {
+        setEvaluations(mockEvaluations);
+        setIsLoading(false);
+      }, 300);
+    }
+  }
 
   const addEvaluation = async (evaluation: Omit<Evaluation, 'id'>) => {
-    try {
-      const evaluationsCollection = collection(db, "evaluations");
-      await addDoc(evaluationsCollection, evaluation);
-      fetchEvaluations(); // Refresh the list after adding
-    } catch (error) {
-      console.error("Error adding evaluation:", error);
-      throw error; // Re-throw to be caught in the component
-    }
+    const newEvaluation = {
+      ...evaluation,
+      id: `eval-${Date.now()}` // Create a temporary unique ID
+    };
+    setEvaluations(prev => [newEvaluation, ...prev]);
+    // Note: This change will be lost on page refresh in this mock setup.
   };
 
   return (
-    <EvaluationsContext.Provider value={{ evaluations, isLoading, addEvaluation, refreshEvaluations: fetchEvaluations }}>
+    <EvaluationsContext.Provider value={{ evaluations, isLoading, addEvaluation, refreshEvaluations }}>
       {children}
     </EvaluationsContext.Provider>
   );
