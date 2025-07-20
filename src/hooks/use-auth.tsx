@@ -20,6 +20,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Use local mock data
 const allUsers: Professor[] = [
   { ...adminUser, id: 'admin' },
   ...professors.map((p, i) => ({ ...p, id: `prof-${i}`}))
