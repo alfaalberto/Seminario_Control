@@ -1,0 +1,10 @@
+{
+  "/_not-found/page": "/_not-found",
+  "/favicon.ico/route": "/favicon.ico",
+  "/page": "/",
+  "/dashboard/evaluate/page": "/dashboard/evaluate",
+  "/dashboard/professors/page": "/dashboard/professors",
+  "/dashboard/reports/page": "/dashboard/reports",
+  "/dashboard/page": "/dashboard",
+  "/dashboard/students/page": "/dashboard/students"
+}
