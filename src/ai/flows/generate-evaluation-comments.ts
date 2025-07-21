@@ -11,6 +11,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import {googleAI} from '@genkit-ai/googleai';
 
 const GenerateEvaluationCommentsInputSchema = z.object({
   prompt: z.string().describe('Una indicación en lenguaje natural del profesor describiendo la presentación del estudiante.'),
@@ -61,7 +62,14 @@ const generateEvaluationCommentsFlow = ai.defineFlow(
     outputSchema: GenerateEvaluationCommentsOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
-    return output!;
+    const llmResponse = await ai.generate({
+      model: googleAI.model('gemini-2.0-flash'),
+      prompt: prompt.render(input)!,
+      output: {
+        schema: GenerateEvaluationCommentsOutputSchema,
+      },
+    });
+
+    return llmResponse.output()!;
   }
 );

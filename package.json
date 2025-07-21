@@ -10,7 +10,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "postinstall": "patch-package"
+    "db:seed": "npx ts-node scripts/seed.ts"
   },
   "dependencies": {
     "@genkit-ai/googleai": "1.10.0",
@@ -47,7 +47,6 @@
     "lucide-react": "^0.475.0",
     "next": "14.2.5",
     "next-themes": "^0.4.6",
-    "patch-package": "^8.0.0",
     "react": "^18.3.1",
     "react-day-picker": "^8.10.1",
     "react-dom": "^18.3.1",
@@ -59,13 +58,22 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@firebase/app": "^0.14.0",
+    "@firebase/firestore": "^4.9.0",
     "@types/file-saver": "^2.0.7",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "firebase": "^12.0.0",
     "genkit-cli": "1.10.0",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
+    "ts-node": "^10.9.2",
     "typescript": "^5"
+  },
+  "overrides": {
+    "@genkit-ai/next": {
+      "next": "$next"
+    }
   }
 }
