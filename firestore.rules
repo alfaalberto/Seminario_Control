@@ -1,8 +1,44 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if false;
+
+    // Función para verificar si un usuario es administrador
+    function isAdmin() {
+      // Verifica si el ID del usuario autenticado existe en la colección 'users'
+      // y si su documento tiene el campo role == 'admin'
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // --- REGLAS PARA LA COLECCIÓN 'users' ---
+    match /users/{userId} {
+      // CUALQUIER usuario autenticado puede leer la lista de usuarios (para selectores, etc.)
+      allow read: if request.auth != null;
+
+      // SÓLO un administrador puede crear, actualizar o eliminar usuarios.
+      allow write: if isAdmin();
+    }
+
+    // --- REGLAS PARA LA COLECCIÓN 'students' ---
+    match /students/{studentId} {
+       // CUALQUIER usuario autenticado puede leer la lista de estudiantes.
+      allow read: if request.auth != null;
+
+      // SÓLO un administrador puede crear, actualizar o eliminar estudiantes.
+      allow write: if isAdmin();
+    }
+
+    // --- REGLAS PARA LA COLECCIÓN 'evaluations' ---
+    match /evaluations/{evaluationId} {
+      // CUALQUIER usuario autenticado puede leer todas las evaluaciones (para la página de reportes).
+      allow read: if request.auth != null;
+
+      // SÓLO usuarios autenticados (profesores o admin) pueden crear evaluaciones.
+      allow create: if request.auth != null;
+
+      // Nadie puede actualizar o borrar evaluaciones para mantener la integridad de los registros.
+      // (Esto se puede cambiar si se necesita la funcionalidad de editar/eliminar).
+      allow update, delete: if false;
     }
   }
 }
