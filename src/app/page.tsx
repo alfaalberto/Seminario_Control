@@ -1,7 +1,8 @@
 // src/app/page.tsx
 'use client';
 
-import React, { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/combined';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/combined';
 import { Input } from '@/components/ui/combined';
@@ -50,8 +51,8 @@ const LoginPageContent: React.FC = () => {
   const buttonText = isAuthLoading ? 'Cargando...' : (isLoading ? 'Iniciando...' : 'Iniciar Sesión');
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <Card className="w-full max-w-md mx-4">
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-md mx-auto">
         <CardHeader className="text-center">
             <div className="flex justify-center items-center mb-4">
                <Logo />
@@ -64,7 +65,7 @@ const LoginPageContent: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-           <form onSubmit={handleLogin} className="space-y-4 pt-4">
+           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Correo Electrónico</Label>
               <Input 
@@ -94,6 +95,12 @@ const LoginPageContent: React.FC = () => {
               {buttonText}
             </Button>
           </form>
+           <div className="mt-4 text-center text-sm">
+            ¿No tienes una cuenta?{" "}
+            <Link href="/register" className="underline text-primary">
+              Regístrate aquí
+            </Link>
+          </div>
         </CardContent>
       </Card>
     </div>

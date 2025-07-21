@@ -16,21 +16,48 @@ interface StudentsContextType {
 
 const StudentsContext = createContext<StudentsContextType | undefined>(undefined);
 
+const getInitialStudents = (): Student[] => {
+  if (typeof window === 'undefined') {
+    return mockStudents;
+  }
+  try {
+    const storedStudents = sessionStorage.getItem('allStudents');
+    return storedStudents ? JSON.parse(storedStudents) : mockStudents;
+  } catch (error) {
+    console.error("Failed to parse students from sessionStorage", error);
+    return mockStudents;
+  }
+};
+
+const updateSessionStorage = (students: Student[]) => {
+  if (typeof window !== 'undefined') {
+    sessionStorage.setItem('allStudents', JSON.stringify(students));
+  }
+}
+
 export const StudentsProvider = ({ children }: { children: ReactNode }) => {
-  const [students, setStudents] = useState<Student[]>([]);
+  const [students, setStudents] = useState<Student[]>(getInitialStudents);
   const [isLoading, setIsLoading] = useState(true);
   const { authenticatedUser } = useAuth();
+  
+  // Initialize sessionStorage on first load if it's not already set
+  useEffect(() => {
+     if (typeof window !== 'undefined' && !sessionStorage.getItem('allStudents')) {
+      updateSessionStorage(mockStudents);
+    }
+  }, []);
 
   useEffect(() => {
     if (authenticatedUser) {
       setIsLoading(true);
-      // Simulate fetching data
+      // Simulate fetching data, which now comes from sessionStorage-backed state
       setTimeout(() => {
-        setStudents(mockStudents);
+        setStudents(getInitialStudents());
         setIsLoading(false);
-      }, 500);
+      }, 300);
     } else {
       setStudents([]);
+      setIsLoading(false);
     }
   }, [authenticatedUser]);
 
@@ -39,15 +66,21 @@ export const StudentsProvider = ({ children }: { children: ReactNode }) => {
       ...student,
       id: `student-${Date.now()}` // Create a temporary unique ID
     };
-    setStudents(prev => [...prev, newStudent].sort((a, b) => a.name.localeCompare(b.name)));
+    const updatedStudents = [...students, newStudent].sort((a, b) => a.name.localeCompare(b.name));
+    setStudents(updatedStudents);
+    updateSessionStorage(updatedStudents);
   };
 
   const updateStudent = async (updatedStudent: Student) => {
-    setStudents(prev => prev.map(s => s.id === updatedStudent.id ? updatedStudent : s));
+    const updatedStudents = students.map(s => s.id === updatedStudent.id ? updatedStudent : s)
+    setStudents(updatedStudents);
+    updateSessionStorage(updatedStudents);
   };
 
   const deleteStudent = async (studentId: string) => {
-    setStudents(prev => prev.filter(s => s.id !== studentId));
+    const updatedStudents = students.filter(s => s.id !== studentId);
+    setStudents(updatedStudents);
+    updateSessionStorage(updatedStudents);
   };
 
   return (
