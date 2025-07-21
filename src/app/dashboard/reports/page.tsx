@@ -2,18 +2,18 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/combined";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/combined";
 import { useEvaluations } from "@/hooks/use-evaluations";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/combined";
 import { type Evaluation, type Semester, evaluationCriteria, semesters } from "@/lib/data";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/combined";
+import { ScrollArea } from "@/components/ui/combined";
+import { Separator } from "@/components/ui/combined";
+import { Button } from "@/components/ui/combined";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/ui/combined";
 import { EvaluationChart } from "@/components/evaluation-chart";
 
 export default function ReportsPage() {

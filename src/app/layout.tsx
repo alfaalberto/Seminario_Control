@@ -1,6 +1,6 @@
 import type {Metadata} from 'next';
 import './globals.css';
-import { Toaster } from "@/components/ui/toaster"
+import { Toaster } from "@/components/ui/combined"
 import { ProfessorsProvider } from '@/hooks/use-professors';
 import { EvaluationsProvider } from '@/hooks/use-evaluations';
 import { AuthProvider } from '@/hooks/use-auth';

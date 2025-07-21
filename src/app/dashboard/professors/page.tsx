@@ -2,18 +2,18 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/combined";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/combined";
+import { Button } from "@/components/ui/combined";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/combined";
+import { Input } from "@/components/ui/combined";
+import { Label } from "@/components/ui/combined";
 import { type Professor } from "@/lib/data";
 import { PlusCircle, Edit, Trash2, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useProfessors } from "@/hooks/use-professors";
 import { useAuth } from "@/hooks/use-auth";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/ui/combined";
 
 function ProfessorsPageContent() {
   const { toast } = useToast();

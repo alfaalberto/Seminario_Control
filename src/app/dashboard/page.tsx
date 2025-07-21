@@ -1,13 +1,13 @@
 // src/app/dashboard/page.tsx
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/combined";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/combined";
+import { Badge } from "@/components/ui/combined";
 import { BarChart, ClipboardEdit, Users } from "lucide-react";
 import { useEvaluations } from "@/hooks/use-evaluations";
 import { useStudents } from "@/hooks/use-students";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/ui/combined";
 
 export default function DashboardPage() {
   const { evaluations, isLoading: isLoadingEvaluations } = useEvaluations();

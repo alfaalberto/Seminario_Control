@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useTransition, useMemo, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider";
-import { Textarea } from "@/components/ui/textarea";
-import { Separator } from "@/components/ui/separator";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/combined";
+import { Button } from "@/components/ui/combined";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/combined";
+import { Label } from "@/components/ui/combined";
+import { Slider } from "@/components/ui/combined";
+import { Textarea } from "@/components/ui/combined";
+import { Separator } from "@/components/ui/combined";
 import type { Student, Semester, Professor, Evaluation } from "@/lib/data";
 import { evaluationCriteria, semesters, criteriaStrings } from "@/lib/data";
 import { Sparkles, Loader2, Info } from "lucide-react";
@@ -15,8 +15,8 @@ import { getAIComments } from "@/app/dashboard/evaluate/actions";
 import { useToast } from "@/hooks/use-toast";
 import { useEvaluations } from "@/hooks/use-evaluations";
 import { format } from "date-fns";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/combined";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/combined";
 import { useStudents } from "@/hooks/use-students";
 
 
