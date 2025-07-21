@@ -2,7 +2,6 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { type User as FirebaseUser } from "firebase/auth";
 import { adminUser, professors as mockProfessors, type Professor } from '@/lib/data';
 import { useToast } from './use-toast';
 
@@ -11,7 +10,6 @@ const fakeApiCall = (duration: number) => new Promise(resolve => setTimeout(reso
 
 interface AuthContextType {
   authenticatedUser: Professor | null;
-  firebaseUser: FirebaseUser | null; // Keep type for consistency, but it will be null
   isAdmin: boolean;
   isAuthLoading: boolean;
   login: (email: string, pass: string) => Promise<Professor | null>;
@@ -78,7 +76,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const isAdmin = authenticatedUser?.role === 'admin';
 
   return (
-    <AuthContext.Provider value={{ firebaseUser: null, authenticatedUser, isAdmin, isAuthLoading, login, logout }}>
+    <AuthContext.Provider value={{ authenticatedUser, isAdmin, isAuthLoading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
