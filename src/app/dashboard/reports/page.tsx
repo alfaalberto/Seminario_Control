@@ -1,7 +1,7 @@
 // src/app/dashboard/reports/page.tsx
 "use client";
 
-import { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/combined";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/combined";
 import { useEvaluations } from "@/hooks/use-evaluations";
@@ -16,7 +16,7 @@ import { saveAs } from "file-saver";
 import { Skeleton } from "@/components/ui/combined";
 import { EvaluationChart } from "@/components/evaluation-chart";
 
-export default function ReportsPage() {
+const ReportsPage: React.FC = () => {
   const { evaluations, isLoading } = useEvaluations();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedEvaluation, setSelectedEvaluation] = useState<Evaluation | null>(null);
@@ -243,3 +243,5 @@ export default function ReportsPage() {
     </>
   );
 }
+
+export default ReportsPage;

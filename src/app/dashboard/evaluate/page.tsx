@@ -1,11 +1,12 @@
 // src/app/dashboard/evaluate/page.tsx
 "use client";
 
+import React from 'react';
 import { EvaluationForm } from "@/components/evaluation-form";
 import { useAuth } from "@/hooks/use-auth";
 
 
-export default function EvaluatePage() {
+const EvaluatePage: React.FC = () => {
   const { authenticatedUser, isAuthLoading } = useAuth();
 
   if (isAuthLoading) {
@@ -32,3 +33,5 @@ export default function EvaluatePage() {
     </div>
   );
 }
+
+export default EvaluatePage;

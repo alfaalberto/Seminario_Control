@@ -1,7 +1,7 @@
 // src/app/dashboard/professors/page.tsx
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/combined";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/combined";
 import { Button } from "@/components/ui/combined";
@@ -15,7 +15,7 @@ import { useProfessors } from "@/hooks/use-professors";
 import { useAuth } from "@/hooks/use-auth";
 import { Skeleton } from "@/components/ui/combined";
 
-function ProfessorsPageContent() {
+const ProfessorsPageContent: React.FC = () => {
   const { toast } = useToast();
   const { professors, adminUser, isLoading, addProfessor, updateProfessor, deleteProfessor } = useProfessors();
   const { isAdmin } = useAuth();
@@ -240,6 +240,8 @@ function ProfessorsPageContent() {
   );
 }
 
-export default function ProfessorsPage() {
+const ProfessorsPage: React.FC = () => {
   return <ProfessorsPageContent />;
 }
+
+export default ProfessorsPage;

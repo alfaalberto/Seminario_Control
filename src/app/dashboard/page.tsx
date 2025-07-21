@@ -1,6 +1,7 @@
 // src/app/dashboard/page.tsx
 "use client";
 
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/combined";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/combined";
 import { Badge } from "@/components/ui/combined";
@@ -9,7 +10,7 @@ import { useEvaluations } from "@/hooks/use-evaluations";
 import { useStudents } from "@/hooks/use-students";
 import { Skeleton } from "@/components/ui/combined";
 
-export default function DashboardPage() {
+const DashboardPage: React.FC = () => {
   const { evaluations, isLoading: isLoadingEvaluations } = useEvaluations();
   const { students, isLoading: isLoadingStudents } = useStudents();
   
@@ -127,3 +128,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+export default DashboardPage;

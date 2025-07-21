@@ -1,6 +1,7 @@
 // src/components/user-nav.tsx
 "use client";
 
+import React from 'react';
 import {
   Avatar,
   AvatarFallback,
@@ -20,7 +21,7 @@ import { useAuth } from "@/hooks/use-auth"
 import { useRouter } from "next/navigation";
 import { Skeleton } from "./ui/combined";
 
-export function UserNav() {
+export const UserNav: React.FC = () => {
   const { authenticatedUser, logout, isAuthLoading } = useAuth();
   const router = useRouter();
 

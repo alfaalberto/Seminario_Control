@@ -1,8 +1,8 @@
 // src/components/evaluation-chart.tsx
 "use client";
 
+import React from 'react';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/combined';
 import { useTheme } from 'next-themes';
 
 interface ChartData {
@@ -14,15 +14,15 @@ interface EvaluationChartProps {
   data: ChartData[];
 }
 
-export function EvaluationChart({ data }: EvaluationChartProps) {
+export const EvaluationChart: React.FC<EvaluationChartProps> = ({ data }) => {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
 
-  const axisColor = isDark ? '#888' : '#555';
-  const gridColor = isDark ? '#444' : '#eee';
+  const axisColor = isDark ? 'hsl(var(--muted-foreground))' : 'hsl(var(--muted-foreground))';
+  const gridColor = isDark ? 'hsl(var(--border))' : 'hsl(var(--border))';
   const barColor = 'hsl(var(--primary))';
-  const tooltipBackground = isDark ? 'hsl(var(--background))' : '#fff';
-  const tooltipBorder = isDark ? 'hsl(var(--border))' : '#ccc';
+  const tooltipBackground = isDark ? 'hsl(var(--background))' : 'hsl(var(--background))';
+  const tooltipBorder = isDark ? 'hsl(var(--border))' : 'hsl(var(--border))';
 
   return (
     <div className="h-[350px] w-full">
@@ -41,10 +41,12 @@ export function EvaluationChart({ data }: EvaluationChartProps) {
             dataKey="name" 
             tick={{ fill: axisColor, fontSize: 12 }} 
             tickLine={{ stroke: axisColor }}
+            axisLine={{ stroke: axisColor }}
           />
           <YAxis 
             tick={{ fill: axisColor, fontSize: 12 }} 
             tickLine={{ stroke: axisColor }}
+            axisLine={{ stroke: axisColor }}
             domain={[0, 10]}
           />
           <Tooltip
@@ -52,7 +54,8 @@ export function EvaluationChart({ data }: EvaluationChartProps) {
             contentStyle={{ 
               backgroundColor: tooltipBackground, 
               borderColor: tooltipBorder,
-              borderRadius: '0.5rem'
+              borderRadius: '0.5rem',
+              color: 'hsl(var(--foreground))'
             }}
           />
           <Legend wrapperStyle={{fontSize: "14px"}} />

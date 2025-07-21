@@ -1,7 +1,7 @@
 // src/app/page.tsx
 'use client';
 
-import { useRouter } from 'next/navigation';
+import React, { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/combined';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/combined';
 import { Input } from '@/components/ui/combined';
@@ -12,9 +12,9 @@ import { useToast } from '@/hooks/use-toast';
 import { FormEvent, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 
-function LoginPageContent() {
+const LoginPageContent: React.FC = () => {
   const router = useRouter();
-  const { login, isAuthLoading } = useAuth(); // We now only need isAuthLoading
+  const { login, isAuthLoading } = useAuth();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -101,6 +101,8 @@ function LoginPageContent() {
 }
 
 
-export default function LoginPage() {
+const LoginPage: React.FC = () => {
   return <LoginPageContent />;
 }
+
+export default LoginPage;

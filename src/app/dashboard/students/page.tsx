@@ -1,7 +1,7 @@
 // src/app/dashboard/students/page.tsx
 "use client";
 
-import { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/combined";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/combined";
 import { Button } from "@/components/ui/combined";
@@ -18,7 +18,7 @@ import { useStudents } from "@/hooks/use-students";
 import { Skeleton } from "@/components/ui/combined";
 
 
-function StudentsPageContent() {
+const StudentsPageContent: React.FC = () => {
   const { toast } = useToast();
   const { students, isLoading, addStudent, updateStudent, deleteStudent } = useStudents();
   const { evaluations } = useEvaluations();
@@ -238,8 +238,10 @@ function StudentsPageContent() {
 }
 
 
-export default function StudentsPage() {
+const StudentsPage: React.FC = () => {
   return (
       <StudentsPageContent />
   );
 }
+
+export default StudentsPage;

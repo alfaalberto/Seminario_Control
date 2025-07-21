@@ -2,6 +2,8 @@
 "use client";
 
 import Link from 'next/link';
+import React from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Home,
   Users,
@@ -24,14 +26,12 @@ import { UserNav } from '@/components/user-nav';
 import { Logo } from '@/components/logo';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { useAuth } from '@/hooks/use-auth';
-import { useRouter } from 'next/navigation';
-import React from 'react';
 
-export default function DashboardLayout({
-  children,
-}: {
+interface DashboardLayoutProps {
   children: React.ReactNode;
-}) {
+}
+
+const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const { authenticatedUser, isAuthLoading } = useAuth();
   const router = useRouter();
 
@@ -121,3 +121,5 @@ export default function DashboardLayout({
     </SidebarProvider>
   );
 }
+
+export default DashboardLayout;
