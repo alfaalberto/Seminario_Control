@@ -4,6 +4,13 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import type { Evaluation } from '@/lib/data';
 import { mockEvaluations } from '@/lib/data';
+import { db } from '@/lib/firebase';
+import {
+  collection,
+  addDoc,
+  onSnapshot,
+  query
+} from 'firebase/firestore';
 import { useAuth } from './use-auth';
 
 interface EvaluationsContextType {
@@ -21,35 +28,24 @@ export const EvaluationsProvider = ({ children }: { children: ReactNode }) => {
   const { authenticatedUser } = useAuth();
 
   useEffect(() => {
-    if (authenticatedUser) {
-      setIsLoading(true);
-      // Simulate fetching data
-      setTimeout(() => {
-        setEvaluations(mockEvaluations);
-        setIsLoading(false);
-      }, 500);
-    } else {
+    if (!authenticatedUser) {
       setEvaluations([]);
+      return;
     }
+    setIsLoading(true);
+    const q = query(collection(db, 'evaluations'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const evaluationsData = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() })) as Evaluation[];
+      setEvaluations(evaluationsData);
+      setIsLoading(false);
+    });
+    return () => unsubscribe();
   }, [authenticatedUser]);
   
-  const refreshEvaluations = () => {
-     if (authenticatedUser) {
-      setIsLoading(true);
-      setTimeout(() => {
-        setEvaluations(mockEvaluations);
-        setIsLoading(false);
-      }, 300);
-    }
-  }
+  const refreshEvaluations = () => {}
 
   const addEvaluation = async (evaluation: Omit<Evaluation, 'id'>) => {
-    const newEvaluation = {
-      ...evaluation,
-      id: `eval-${Date.now()}` // Create a temporary unique ID
-    };
-    setEvaluations(prev => [newEvaluation, ...prev]);
-    // Note: This change will be lost on page refresh in this mock setup.
+    await addDoc(collection(db, 'evaluations'), evaluation);
   };
 
   return (

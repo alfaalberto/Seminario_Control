@@ -4,6 +4,17 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import type { Student } from '@/lib/data';
 import { students as mockStudents } from '@/lib/data';
+import { db } from '@/lib/firebase';
+import {
+  collection,
+  getDocs,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  query
+} from 'firebase/firestore';
 import { useAuth } from './use-auth';
 
 interface StudentsContextType {
@@ -16,72 +27,45 @@ interface StudentsContextType {
 
 const StudentsContext = createContext<StudentsContextType | undefined>(undefined);
 
-const getInitialStudents = (): Student[] => {
-  if (typeof window === 'undefined') {
-    return mockStudents;
-  }
-  try {
-    const storedStudents = sessionStorage.getItem('allStudents');
-    return storedStudents ? JSON.parse(storedStudents) : mockStudents;
-  } catch (error) {
-    console.error("Failed to parse students from sessionStorage", error);
-    return mockStudents;
-  }
-};
+// Firestore: No usar datos mock, la fuente es la colección 'students'
 
-const updateSessionStorage = (students: Student[]) => {
-  if (typeof window !== 'undefined') {
-    sessionStorage.setItem('allStudents', JSON.stringify(students));
-  }
-}
 
 export const StudentsProvider = ({ children }: { children: ReactNode }) => {
-  const [students, setStudents] = useState<Student[]>(getInitialStudents);
+  const [students, setStudents] = useState<Student[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { authenticatedUser } = useAuth();
-  
-  // Initialize sessionStorage on first load if it's not already set
-  useEffect(() => {
-     if (typeof window !== 'undefined' && !sessionStorage.getItem('allStudents')) {
-      updateSessionStorage(mockStudents);
-    }
-  }, []);
 
+  // Firestore: Escuchar cambios en tiempo real de la colección 'students'
   useEffect(() => {
-    if (authenticatedUser) {
-      setIsLoading(true);
-      // Simulate fetching data, which now comes from sessionStorage-backed state
-      setTimeout(() => {
-        setStudents(getInitialStudents());
-        setIsLoading(false);
-      }, 300);
-    } else {
+    if (!authenticatedUser) {
       setStudents([]);
-      setIsLoading(false);
+      return;
     }
+    setIsLoading(true);
+    const q = query(collection(db, 'students'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const studentsData = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() })) as Student[];
+      setStudents(studentsData);
+      setIsLoading(false);
+    });
+    return () => unsubscribe();
   }, [authenticatedUser]);
 
   const addStudent = async (student: Omit<Student, 'id'>) => {
-     const newStudent = {
-      ...student,
-      id: `student-${Date.now()}` // Create a temporary unique ID
-    };
-    const updatedStudents = [...students, newStudent].sort((a, b) => a.name.localeCompare(b.name));
-    setStudents(updatedStudents);
-    updateSessionStorage(updatedStudents);
+    await addDoc(collection(db, 'students'), student);
   };
 
   const updateStudent = async (updatedStudent: Student) => {
-    const updatedStudents = students.map(s => s.id === updatedStudent.id ? updatedStudent : s)
-    setStudents(updatedStudents);
-    updateSessionStorage(updatedStudents);
+    const ref = doc(db, 'students', updatedStudent.id);
+    const { id, ...data } = updatedStudent;
+    await updateDoc(ref, data);
   };
 
   const deleteStudent = async (studentId: string) => {
-    const updatedStudents = students.filter(s => s.id !== studentId);
-    setStudents(updatedStudents);
-    updateSessionStorage(updatedStudents);
+    const ref = doc(db, 'students', studentId);
+    await deleteDoc(ref);
   };
+
 
   return (
     <StudentsContext.Provider value={{ students, isLoading, addStudent, updateStudent, deleteStudent }}>
