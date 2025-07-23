@@ -71,6 +71,14 @@ const ProfessorsPageContent: React.FC = () => {
   };
 
   const handleSaveChanges = async () => {
+    if (!isAdmin) {
+      toast({
+        variant: "destructive",
+        title: "Acceso denegado",
+        description: "Solo el administrador puede realizar esta acción."
+      });
+      return;
+    }
     if (!formData.name || !formData.department || !formData.email) {
       toast({
         variant: "destructive",
@@ -138,7 +146,7 @@ const ProfessorsPageContent: React.FC = () => {
         {isAdmin && (
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button onClick={handleAddClick} disabled={isLoading}>
+              <Button onClick={handleAddClick} disabled={isLoading || !isAdmin}>
                 <PlusCircle className="mr-2" />
                 Agregar Profesor
               </Button>
@@ -211,12 +219,12 @@ const ProfessorsPageContent: React.FC = () => {
                     <TableCell>{user.department}</TableCell>
                     {isAdmin && (
                       <TableCell className="text-right space-x-2">
-                        <Button variant="ghost" size="icon" onClick={() => handleEditClick(user)} disabled={isSubmitting}>
+                        <Button variant="ghost" size="icon" onClick={() => handleEditClick(user)} disabled={isSubmitting || !isAdmin}>
                             <Edit className="h-4 w-4" />
                             <span className="sr-only">Editar</span>
                         </Button>
                         {user.id !== 'admin' && (
-                          <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(user.id)} disabled={isSubmitting}>
+                          <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(user.id)} disabled={isSubmitting || !isAdmin}>
                               <Trash2 className="h-4 w-4 text-destructive" />
                               <span className="sr-only">Eliminar</span>
                           </Button>

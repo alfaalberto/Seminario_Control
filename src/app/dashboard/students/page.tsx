@@ -85,6 +85,14 @@ const StudentsPageContent: React.FC = () => {
   };
 
   const handleSaveChanges = async () => {
+    if (!isAdmin) {
+      toast({
+        variant: "destructive",
+        title: "Acceso denegado",
+        description: "Solo el administrador puede realizar esta acción."
+      });
+      return;
+    }
     if (!formData.name || !formData.studentId) {
       toast({
         variant: "destructive",
@@ -135,7 +143,7 @@ const StudentsPageContent: React.FC = () => {
         {isAdmin && (
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button onClick={handleAddClick} disabled={isLoading}>
+              <Button onClick={handleAddClick} disabled={isLoading || !isAdmin}>
                 <PlusCircle className="mr-2" />
                 Agregar Estudiante
               </Button>
@@ -209,11 +217,11 @@ const StudentsPageContent: React.FC = () => {
                       </TableCell>
                       {isAdmin && (
                         <TableCell className="text-right space-x-2">
-                          <Button variant="ghost" size="icon" onClick={() => handleEditClick(student)} disabled={isSubmitting}>
+                          <Button variant="ghost" size="icon" onClick={() => handleEditClick(student)} disabled={isSubmitting || !isAdmin}>
                               <Edit className="h-4 w-4" />
                               <span className="sr-only">Editar</span>
                           </Button>
-                          <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(student.id)} disabled={isSubmitting}>
+                          <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(student.id)} disabled={isSubmitting || !isAdmin}>
                               <Trash2 className="h-4 w-4 text-destructive" />
                               <span className="sr-only">Eliminar</span>
                           </Button>
